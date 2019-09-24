@@ -27,6 +27,7 @@ namespace FeriaVirtualServices.Services
             try
             {
                 Connection c = new Connection();
+                // prueba
                 string sql = "select * from usuarios where username='" + username + "' and password='" + password + "'";
                 using (OracleCommand comm = new OracleCommand(sql, c.Conn))
                 {
