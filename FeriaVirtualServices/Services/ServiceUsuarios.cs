@@ -19,36 +19,46 @@ namespace FeriaVirtualServices.Services
     public class ServiceUsuarios : IUsuarios
     {
         AuxiliarFunctions f = new AuxiliarFunctions();
-
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public string Login(string username, string password)
         {
-            bool r = false;
+            string[] valores = new string[2];
+            bool isFill = false;
             try
             {
                 Connection c = new Connection();
-                // prueba
-                string sql = "select * from usuarios where username='" + username + "' and password='" + password + "'";
-                using (OracleCommand comm = new OracleCommand(sql, c.Conn))
+                // En base de este documento: https://www.c-sharpcorner.com/article/calling-oracle-stored-procedures-from-microsoft-net/
+                // Otro: https://stackoverflow.com/questions/3940587/calling-oracle-stored-procedure-from-c
+                OracleDataAdapter adapter = new OracleDataAdapter();
+                OracleCommand comm = new OracleCommand();
+                comm.Connection = c.Conn;
+                // retorna usuario y perfil
+                comm.CommandText = "pkg_usuarios.login_usuario";
+                comm.CommandType = System.Data.CommandType.StoredProcedure;
+                comm.Parameters.Add("in_username", OracleDbType.Varchar2, 30, "username").Value = username;  
+                comm.Parameters.Add("in_password", OracleDbType.Varchar2, 20, "password").Value = password;
+                comm.Parameters.Add("t_cursor", OracleDbType.RefCursor).Direction = System.Data.ParameterDirection.Output;
+                using (OracleDataReader reader = comm.ExecuteReader())
                 {
-                    using (OracleDataReader reader = comm.ExecuteReader())
+                    string usuario = string.Empty;
+                    string perfil = string.Empty;
+                    while (reader.Read())
                     {
-                        while (reader.Read())
-                        {
-                            r = true;
-                        }
+                        usuario = reader[0].ToString();
+                        perfil = reader[1].ToString();
+                        valores[0] = usuario;
+                        valores[1] = perfil;
+                        isFill = true;
                     }
+                    c.Close();
                 }
-                c.Close();
             }
             catch (Exception e)
             {
-                r = false;
                 Debug.WriteLine(e.ToString());
             }
 
-
-            return f.Return(r);
+            return isFill ? f.Return(valores) : f.Return("Usuario y/o contraseño no válidos");
         }
 
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
