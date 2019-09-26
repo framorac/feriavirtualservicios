@@ -52,9 +52,11 @@
     <Compile Include="Contracts\IUsuarios.cs" />
     <Compile Include="Contracts\IServiceTipoVentas.cs" />
     <Compile Include="Contracts\IServiceTipoEstados.cs" />
+    <Compile Include="Contracts\IServiceVentas.cs" />
     <Compile Include="Services\ServiceTipoEstados.cs" />
     <Compile Include="Services\ServiceTipoVentas.cs" />
     <Compile Include="Services\ServiceUsuarios.cs" />
+    <Compile Include="Services\ServiceVentas.cs" />
     <Compile Include="Structures\AuxiliarFunctions.cs" />
     <Compile Include="Structures\Connection.cs" />
     <Compile Include="Structures\Tables\TipoEstado.cs" />
