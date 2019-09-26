@@ -87,12 +87,12 @@ namespace FeriaVirtualServices.Services
                         datos.Add(new Usuario(usuario, "", perfil));
                     }
                 }
-                c.Close();
+                c.Close(); //Cierra conexion
             }
             catch (Exception e) {
                 Debug.WriteLine(e.ToString());
             }
-            return f.Return(datos);
+            return f.Return(datos); //retorna datos
         }
     }
 }
