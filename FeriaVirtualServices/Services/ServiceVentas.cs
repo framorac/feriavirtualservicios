@@ -97,5 +97,83 @@ namespace FeriaVirtualServices.Services
             }
             return f.Return(r);
         }
+
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public string InsertVenta(int fk_usuario, DateTime fecha, int fk_tipoEstado, int fk_tipoVenta)
+        {
+            string r = string.Empty;
+            try
+            {
+                Connection c = new Connection();
+                OracleDataAdapter adapter = new OracleDataAdapter();
+                OracleCommand comm = new OracleCommand();
+                comm.Connection = c.Conn;
+                // retorna usuario y perfil
+                comm.CommandText = "pkg_ventas.insert_ventas";
+                comm.CommandType = System.Data.CommandType.StoredProcedure;
+                comm.Parameters.Add("in_fk_usuario", OracleDbType.Int32, 38, "fk_usuario").Value = fk_usuario;
+                comm.Parameters.Add("in_fecha", OracleDbType.Date, 30, "fecha").Value = fecha;
+                comm.Parameters.Add("in_fk_tipoestado", OracleDbType.Int32, 38, "fk_tipoestado").Value = fk_tipoEstado;
+                comm.Parameters.Add("in_fk_tipoventa", OracleDbType.Int32, 38, "fk_tipoventa").Value = fk_tipoVenta;
+                OracleParameter param = comm.Parameters.Add("response", OracleDbType.Int32, ParameterDirection.Output);
+
+                comm.ExecuteNonQuery();
+                var responseQuery = param.Value.ToString();
+                if (responseQuery == "1")
+                {
+                    r = "Venta Ingresada.";
+                }
+                else
+                {
+                    r = "Venta no ha sido ingresada. Consulte con el equipo técnico.";
+                }
+
+                c.Close();
+            }
+            catch (Exception e)
+            {
+                r = "Ha ocurrido un error.";
+                Debug.WriteLine(e.ToString());
+            }
+            return f.Return(r);
+        }
+
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public string DeleteVenta(int id)
+        {
+            string r = string.Empty;
+            try
+            {
+                Connection c = new Connection();
+                OracleDataAdapter adapter = new OracleDataAdapter();
+                OracleCommand comm = new OracleCommand();
+                comm.Connection = c.Conn;
+                
+                comm.CommandText = "pkg_ventas.delete_ventas";
+                comm.CommandType = System.Data.CommandType.StoredProcedure;
+                comm.Parameters.Add("in_id", OracleDbType.Int32, 38, "id").Value = id;
+                OracleParameter param = comm.Parameters.Add("response", OracleDbType.Int32, ParameterDirection.Output);
+
+                comm.ExecuteNonQuery();
+                var responseQuery = param.Value.ToString();
+                if (responseQuery == "1")
+                {
+                    r = "Venta eliminada.";
+                }
+                else
+                {
+                    r = "Venta no existe.";
+                }
+
+                c.Close();
+            }
+            catch (Exception e)
+            {
+                r = "Ha ocurrido un error.";
+                Debug.WriteLine(e.ToString());
+            }
+            return f.Return(r);
+        }
+
     }
 }
