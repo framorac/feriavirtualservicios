@@ -16,5 +16,11 @@ namespace FeriaVirtualServices.Services
 
         [OperationContract]
         string UpdateVenta(int id, DateTime fecha, int fk_tipoEstado);
+
+        [OperationContract]
+        string InsertVenta(int fk_usuario, DateTime fecha, int fk_tipoEstado, int fk_tipoVenta);
+
+        [OperationContract]
+        string DeleteVenta(int id);
     }
 }
