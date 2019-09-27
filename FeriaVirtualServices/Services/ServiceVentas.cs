@@ -16,7 +16,7 @@ namespace FeriaVirtualServices.Services
     public class ServiceVentas : IServiceVentas
     {
         AuxiliarFunctions f = new AuxiliarFunctions();
-
+        //Método que obtiene todas las ventas
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public string GetVentas()
         {
