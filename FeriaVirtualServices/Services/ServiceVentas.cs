@@ -8,15 +8,17 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.ServiceModel;
+using System.ServiceModel.Activation;
 using System.Text;
 using System.Web.Script.Services;
 
 namespace FeriaVirtualServices.Services
 {
-    // NOTE: You can use the "Rename" command on the "Refactor" menu to change the class name "ServiceVentas" in both code and config file together.
+    
     public class ServiceVentas : IServiceVentas
     {
         AuxiliarFunctions f = new AuxiliarFunctions();
+
 
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public string GetVentas()
