@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.ServiceModel;
+using System.ServiceModel.Web;
 using System.Text;
 
 namespace FeriaVirtualServices.Services
@@ -12,6 +13,9 @@ namespace FeriaVirtualServices.Services
     public interface IServiceVentas
     {
         [OperationContract]
+        [WebInvoke(Method = "GET",
+            ResponseFormat = WebMessageFormat.Json,
+            BodyStyle = WebMessageBodyStyle.Wrapped)]
         string GetVentas();
 
         [OperationContract]

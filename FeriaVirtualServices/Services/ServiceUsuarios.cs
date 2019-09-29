@@ -110,10 +110,10 @@ namespace FeriaVirtualServices.Services
                 // retorna usuario y perfil
                 comm.CommandText = "pkg_usuarios.update_usuario";
                 comm.CommandType = System.Data.CommandType.StoredProcedure;
-                comm.Parameters.Add("in_id", OracleDbType.Int32, 38 , "id").Value = id;
+                comm.Parameters.Add("in_id_usuario", OracleDbType.Int32, 38 , "id_usuario").Value = id;
                 comm.Parameters.Add("in_username", OracleDbType.Varchar2, 30, "username").Value = username;
                 comm.Parameters.Add("in_password", OracleDbType.Varchar2, 20, "password").Value = password;
-                comm.Parameters.Add("in_fk_perfil", OracleDbType.Int32, 38, "fk_perfil").Value = fk_perfil;
+                comm.Parameters.Add("in_id_perfil", OracleDbType.Int32, 38, "id_perfil").Value = fk_perfil;
                 OracleParameter param = comm.Parameters.Add("response", OracleDbType.Int32, ParameterDirection.Output);
 
                 comm.ExecuteNonQuery();
@@ -153,7 +153,7 @@ namespace FeriaVirtualServices.Services
                 comm.CommandType = System.Data.CommandType.StoredProcedure;
                 comm.Parameters.Add("in_username", OracleDbType.Varchar2, 30, "username").Value = username;
                 comm.Parameters.Add("in_password", OracleDbType.Varchar2, 20, "password").Value = password;
-                comm.Parameters.Add("in_fk_perfil", OracleDbType.Int32, 38, "fk_perfil").Value = fk_perfil;
+                comm.Parameters.Add("in_id_perfil", OracleDbType.Int32, 38, "id_perfil").Value = fk_perfil;
                 OracleParameter param = comm.Parameters.Add("response", OracleDbType.Int32, ParameterDirection.Output);
 
                 comm.ExecuteNonQuery();
@@ -191,7 +191,7 @@ namespace FeriaVirtualServices.Services
                 // retorna usuario y perfil
                 comm.CommandText = "pkg_usuarios.delete_usuario";
                 comm.CommandType = System.Data.CommandType.StoredProcedure;
-                comm.Parameters.Add("in_id", OracleDbType.Int32, 38, "id").Value = id;
+                comm.Parameters.Add("in_id_usuario", OracleDbType.Int32, 38, "id").Value = id;
                 OracleParameter param = comm.Parameters.Add("response", OracleDbType.Int32, ParameterDirection.Output);
 
                 comm.ExecuteNonQuery();
