@@ -63,7 +63,7 @@ namespace FeriaVirtualServices.Services
         }
 
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-        public string GetUsuarios()
+        public List<Usuario> GetUsuarios()
         {
             List<Usuario> datos = new List<Usuario>();
             try
@@ -93,7 +93,7 @@ namespace FeriaVirtualServices.Services
             catch (Exception e) {
                 Debug.WriteLine(e.ToString());
             }
-            return f.Return(datos);
+            return datos;
         }
 
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
