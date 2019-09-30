@@ -74,18 +74,30 @@ namespace FeriaVirtualServices.Services
                 OracleCommand comm = new OracleCommand();
                 comm.Connection = c.Conn;
                 // retorna usuario y perfil
-                comm.CommandText = "pkg_usuarios.select_usuarios";
+                comm.CommandText = "pkg_usuariosv2.select_usuarios";
                 comm.CommandType = System.Data.CommandType.StoredProcedure;
                 comm.Parameters.Add("cur_usuarios", OracleDbType.RefCursor).Direction = System.Data.ParameterDirection.Output;
                 using (OracleDataReader reader = comm.ExecuteReader())
                 {
+                    int id = 0;
                     string usuario = string.Empty;
+                    string password = string.Empty;
                     string perfil = string.Empty;
+                    string nombre = string.Empty;
+                    string apellido = string.Empty;
+                    string email = string.Empty;
+                    DateTime fecha = DateTime.Now;
                     while (reader.Read())
                     {
-                        usuario = reader[0].ToString();
-                        perfil = reader[1].ToString();
-                        datos.Add(new Usuario(usuario, "", perfil));
+                        id = Convert.ToInt32(reader[0].ToString());
+                        usuario = reader[1].ToString();
+                        password = reader[2].ToString();
+                        perfil = reader[3].ToString();
+                        nombre = reader[4].ToString();
+                        apellido = reader[5].ToString();
+                        email = reader[6].ToString();
+                        fecha = (DateTime)reader[7];
+                        datos.Add(new Usuario(id, usuario, password, perfil, nombre, apellido, email, fecha));
                     }
                 }
                 c.Close();
@@ -94,6 +106,7 @@ namespace FeriaVirtualServices.Services
                 Debug.WriteLine(e.ToString());
             }
             return datos;
+            //return f.Return(datos);
         }
 
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
