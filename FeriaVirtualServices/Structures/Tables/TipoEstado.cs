@@ -1,15 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace FeriaVirtualServices.Structures.Tables
 {
+    [DataContract]
     public class TipoEstado
     {
+        [DataMember]
         public int id { get; set; }
+        [DataMember]
         public string tipo { get; set; }
+        [DataMember]
         public string descripcion { get; set; }
 
         public TipoEstado(int id, string tipo, string descripcion)

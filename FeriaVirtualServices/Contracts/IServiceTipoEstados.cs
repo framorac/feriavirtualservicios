@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FeriaVirtualServices.Structures.Tables;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -12,6 +13,6 @@ namespace FeriaVirtualServices.Services
     public interface IServiceTipoEstados
     {
         [OperationContract]
-        string GetTipoEstados();
+        List<TipoEstado> GetTipoEstados();
     }
 }
