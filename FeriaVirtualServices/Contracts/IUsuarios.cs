@@ -1,4 +1,5 @@
 ﻿using FeriaVirtualServices.Structures.Tables;
+using System;
 using System.Collections.Generic;
 using System.ServiceModel;
 
@@ -15,10 +16,10 @@ namespace FeriaVirtualServices.Services
         List<Usuario> GetUsuarios();
 
         [OperationContract]
-        string UpdateUsuario(int id, string username, string password, int fk_perfil);
+        string UpdateUsuario(int id, string username, string password, int fk_perfil, string nombre, string apellido, string email, DateTime fecha);
 
         [OperationContract]
-        string InsertUsuario(string username, string password, int fk_perfil);
+        string InsertUsuario(string username, string password, int fk_perfil, string nombre, string apellido, string email, DateTime fecha);
 
         [OperationContract]
         string DeleteUsuario(int id);

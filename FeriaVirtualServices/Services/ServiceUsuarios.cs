@@ -110,7 +110,7 @@ namespace FeriaVirtualServices.Services
         }
 
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-        public string UpdateUsuario(int id, string username, string password, int fk_perfil) {
+        public string UpdateUsuario(int id, string username, string password, int fk_perfil, string nombre, string apellido, string email, DateTime fecha) {
             string r = string.Empty;
             try
             {
@@ -121,12 +121,16 @@ namespace FeriaVirtualServices.Services
                 OracleCommand comm = new OracleCommand();
                 comm.Connection = c.Conn;
                 // retorna usuario y perfil
-                comm.CommandText = "pkg_usuarios.update_usuario";
+                comm.CommandText = "pkg_usuariosv2.update_usuario";
                 comm.CommandType = System.Data.CommandType.StoredProcedure;
                 comm.Parameters.Add("in_id", OracleDbType.Int32, 38 , "id").Value = id;
                 comm.Parameters.Add("in_username", OracleDbType.Varchar2, 30, "username").Value = username;
                 comm.Parameters.Add("in_password", OracleDbType.Varchar2, 20, "password").Value = password;
                 comm.Parameters.Add("in_fk_perfil", OracleDbType.Int32, 38, "fk_perfil").Value = fk_perfil;
+                comm.Parameters.Add("in_nombre", OracleDbType.Varchar2, 50, "nombre").Value = nombre;
+                comm.Parameters.Add("in_apellido", OracleDbType.Varchar2, 50, "apellido").Value = apellido;
+                comm.Parameters.Add("in_email", OracleDbType.Varchar2, 150, "email").Value = email;
+                comm.Parameters.Add("in_fecha", OracleDbType.Date, 200, "fecha").Value = fecha;
                 OracleParameter param = comm.Parameters.Add("response", OracleDbType.Int32, ParameterDirection.Output);
 
                 comm.ExecuteNonQuery();
@@ -150,7 +154,7 @@ namespace FeriaVirtualServices.Services
         }
 
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-        public string InsertUsuario(string username, string password, int fk_perfil)
+        public string InsertUsuario(string username, string password, int fk_perfil, string nombre, string apellido, string email, DateTime fecha)
         {
             string r = string.Empty;
             try

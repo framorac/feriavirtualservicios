@@ -61,12 +61,15 @@
     <Compile Include="Contracts\IServiceTipoVentas.cs" />
     <Compile Include="Contracts\IServiceTipoEstados.cs" />
     <Compile Include="Contracts\IServiceVentas.cs" />
+    <Compile Include="Contracts\IServicePerfiles.cs" />
+    <Compile Include="Services\ServicePerfiles.cs" />
     <Compile Include="Services\ServiceTipoEstados.cs" />
     <Compile Include="Services\ServiceTipoVentas.cs" />
     <Compile Include="Services\ServiceUsuarios.cs" />
     <Compile Include="Services\ServiceVentas.cs" />
     <Compile Include="Structures\AuxiliarFunctions.cs" />
     <Compile Include="Structures\Connection.cs" />
+    <Compile Include="Structures\Tables\Perfiles.cs" />
     <Compile Include="Structures\Tables\TipoEstado.cs" />
     <Compile Include="Structures\Tables\TipoVenta.cs" />
     <Compile Include="Structures\Tables\Usuario.cs" />

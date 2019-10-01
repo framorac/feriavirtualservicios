@@ -21,7 +21,7 @@ namespace FeriaVirtualServices.Services
 
 
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-        public string GetVentas()
+        public List<Ventas> GetVentas()
         {
             List<Ventas> datos = new List<Ventas>();
             try
@@ -58,7 +58,8 @@ namespace FeriaVirtualServices.Services
             {
                 Debug.WriteLine(e.ToString());
             }
-            return f.Return(datos);
+            //return f.Return(datos);
+            return datos;
         }
 
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
