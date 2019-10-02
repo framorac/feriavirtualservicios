@@ -126,11 +126,11 @@ namespace FeriaVirtualServices.Services
                 comm.Parameters.Add("in_id", OracleDbType.Int32, 38 , "id").Value = id;
                 comm.Parameters.Add("in_username", OracleDbType.Varchar2, 30, "username").Value = username;
                 comm.Parameters.Add("in_password", OracleDbType.Varchar2, 20, "password").Value = password;
-                comm.Parameters.Add("in_fk_perfil", OracleDbType.Int32, 38, "fk_perfil").Value = fk_perfil;
+                comm.Parameters.Add("in_id_perfil", OracleDbType.Int32, 38, "id_perfil").Value = fk_perfil;
                 comm.Parameters.Add("in_nombre", OracleDbType.Varchar2, 50, "nombre").Value = nombre;
                 comm.Parameters.Add("in_apellido", OracleDbType.Varchar2, 50, "apellido").Value = apellido;
                 comm.Parameters.Add("in_email", OracleDbType.Varchar2, 150, "email").Value = email;
-                comm.Parameters.Add("in_fecha", OracleDbType.Date, 200, "fecha").Value = fecha;
+                comm.Parameters.Add("in_fecha", OracleDbType.Date, 200, "fecha_creacion").Value = fecha;
                 OracleParameter param = comm.Parameters.Add("response", OracleDbType.Int32, ParameterDirection.Output);
 
                 comm.ExecuteNonQuery();
