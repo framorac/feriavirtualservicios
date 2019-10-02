@@ -19,7 +19,7 @@ namespace FeriaVirtualServices.Services
         string UpdateUsuario(int id, string username, string password, int fk_perfil, string nombre, string apellido, string email, DateTime fecha);
 
         [OperationContract]
-        string InsertUsuario(string username, string password, int fk_perfil, string nombre, string apellido, string email, DateTime fecha);
+        string InsertUsuario(string username, string password, int id_perfil, string nombre, string apellido, string email, DateTime fecha);
 
         [OperationContract]
         string DeleteUsuario(int id);
