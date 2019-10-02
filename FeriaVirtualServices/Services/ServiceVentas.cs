@@ -14,12 +14,10 @@ using System.Web.Script.Services;
 
 namespace FeriaVirtualServices.Services
 {
-    
     public class ServiceVentas : IServiceVentas
     {
         AuxiliarFunctions f = new AuxiliarFunctions();
-
-
+        //Método que obtiene todas las ventas
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public List<Ventas> GetVentas()
         {
@@ -75,9 +73,9 @@ namespace FeriaVirtualServices.Services
                 // retorna usuario y perfil
                 comm.CommandText = "pkg_ventas.update_ventas";
                 comm.CommandType = System.Data.CommandType.StoredProcedure;
-                comm.Parameters.Add("in_id", OracleDbType.Int32, 38, "id").Value = id;
+                comm.Parameters.Add("in_id_venta", OracleDbType.Int32, 38, "id_venta").Value = id;
                 comm.Parameters.Add("in_fecha", OracleDbType.Date, 30, "fecha").Value = fecha;
-                comm.Parameters.Add("in_fk_tipoestado", OracleDbType.Int32, 38, "fk_tipoestado").Value = fk_tipoEstado;
+                comm.Parameters.Add("in_id_tipoestado", OracleDbType.Int32, 38, "id_tipoestado").Value = fk_tipoEstado;
                 OracleParameter param = comm.Parameters.Add("response", OracleDbType.Int32, ParameterDirection.Output);
 
                 comm.ExecuteNonQuery();
@@ -114,10 +112,10 @@ namespace FeriaVirtualServices.Services
                 // retorna usuario y perfil
                 comm.CommandText = "pkg_ventas.insert_ventas";
                 comm.CommandType = System.Data.CommandType.StoredProcedure;
-                comm.Parameters.Add("in_fk_usuario", OracleDbType.Int32, 38, "fk_usuario").Value = fk_usuario;
+                comm.Parameters.Add("in_id_usuario", OracleDbType.Int32, 38, "id_usuario").Value = fk_usuario;
                 comm.Parameters.Add("in_fecha", OracleDbType.Date, 30, "fecha").Value = fecha;
-                comm.Parameters.Add("in_fk_tipoestado", OracleDbType.Int32, 38, "fk_tipoestado").Value = fk_tipoEstado;
-                comm.Parameters.Add("in_fk_tipoventa", OracleDbType.Int32, 38, "fk_tipoventa").Value = fk_tipoVenta;
+                comm.Parameters.Add("in_id_tipoestado", OracleDbType.Int32, 38, "id_tipoestado").Value = fk_tipoEstado;
+                comm.Parameters.Add("in_id_tipoventa", OracleDbType.Int32, 38, "id_tipoventa").Value = fk_tipoVenta;
                 OracleParameter param = comm.Parameters.Add("response", OracleDbType.Int32, ParameterDirection.Output);
 
                 comm.ExecuteNonQuery();
@@ -154,7 +152,7 @@ namespace FeriaVirtualServices.Services
                 
                 comm.CommandText = "pkg_ventas.delete_ventas";
                 comm.CommandType = System.Data.CommandType.StoredProcedure;
-                comm.Parameters.Add("in_id", OracleDbType.Int32, 38, "id").Value = id;
+                comm.Parameters.Add("in_id_venta", OracleDbType.Int32, 38, "id_venta").Value = id;
                 OracleParameter param = comm.Parameters.Add("response", OracleDbType.Int32, ParameterDirection.Output);
 
                 comm.ExecuteNonQuery();

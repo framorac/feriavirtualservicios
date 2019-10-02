@@ -14,7 +14,10 @@ namespace FeriaVirtualServices.Services
     public interface IServiceVentas
     {
         [OperationContract]
-        List<Ventas> GetVentas();
+        [WebInvoke(Method = "GET",
+            ResponseFormat = WebMessageFormat.Json,
+            BodyStyle = WebMessageBodyStyle.Wrapped)]
+        string GetVentas();
 
         [OperationContract]
         string UpdateVenta(int id, DateTime fecha, int fk_tipoEstado);
