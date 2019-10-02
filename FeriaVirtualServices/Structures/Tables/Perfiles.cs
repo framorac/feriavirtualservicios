@@ -10,8 +10,11 @@ namespace FeriaVirtualServices.Structures.Tables
     [DataContract]
     public class Perfiles
     {
+        [DataMember]
         public int Id_perfil { get; set; }
+        [DataMember]
         public string Tipo { get; set; }
+        [DataMember]
         public string Descripcion { get; set; }
 
         public Perfiles(int id_perfil, string tipo, string descripcion)
