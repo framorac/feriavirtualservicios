@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace FeriaVirtualServices.Structures.Tables
 {
     [DataContract]
-    public class TipoEstado
+    public class TipoProducto
     {
         [DataMember]
         public int id { get; set; }
@@ -17,7 +17,7 @@ namespace FeriaVirtualServices.Structures.Tables
         [DataMember]
         public string descripcion { get; set; }
 
-        public TipoEstado(int id, string tipo, string descripcion)
+        public TipoProducto(int id, string tipo, string descripcion)
         {
             this.id = id;
             this.tipo = tipo;

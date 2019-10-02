@@ -8,27 +8,28 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.ServiceModel;
 using System.Text;
+using System.Web.Script.Services;
 
 namespace FeriaVirtualServices.Services
 {
-    // NOTE: You can use the "Rename" command on the "Refactor" menu to change the class name "ServiceTipoEstados" in both code and config file together.
-    public class ServiceTipoEstados : IServiceTipoEstados
+    // NOTE: You can use the "Rename" command on the "Refactor" menu to change the class name "ServicePerfiles" in both code and config file together.
+    public class ServicePerfiles : IServicePerfiles
     {
-        AuxiliarFunctions f = new AuxiliarFunctions();
-
-        public List<TipoEstado> GetTipoEstados()
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public List<Perfiles> GetPerfiles()
         {
-            List<TipoEstado> datos = new List<TipoEstado>();
+            List<Perfiles> datos = new List<Perfiles>();
             try
             {
                 Connection c = new Connection();
+                // En base de este documento: https://www.c-sharpcorner.com/article/calling-oracle-stored-procedures-from-microsoft-net/
                 OracleDataAdapter adapter = new OracleDataAdapter();
                 OracleCommand comm = new OracleCommand();
                 comm.Connection = c.Conn;
                 // retorna usuario y perfil
-                comm.CommandText = "pkg_tipoestados.select_tipoestados";
+                comm.CommandText = "pkg_perfiles.select_perfiles";
                 comm.CommandType = System.Data.CommandType.StoredProcedure;
-                comm.Parameters.Add("cur_tipoestados", OracleDbType.RefCursor).Direction = System.Data.ParameterDirection.Output;
+                comm.Parameters.Add("cur_perfiles", OracleDbType.RefCursor).Direction = System.Data.ParameterDirection.Output;
                 using (OracleDataReader reader = comm.ExecuteReader())
                 {
                     int id = 0;
@@ -39,7 +40,7 @@ namespace FeriaVirtualServices.Services
                         id = Convert.ToInt32(reader[0]);
                         tipo = reader[1].ToString();
                         descripcion = reader[2].ToString();
-                        datos.Add(new TipoEstado(id, tipo, descripcion));
+                        datos.Add(new Perfiles(id, tipo, descripcion));
                     }
                 }
                 c.Close();
@@ -48,6 +49,7 @@ namespace FeriaVirtualServices.Services
             {
                 Debug.WriteLine(e.ToString());
             }
+            //return f.Return(datos);
             return datos;
         }
     }

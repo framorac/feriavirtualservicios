@@ -8,20 +8,20 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.ServiceModel;
-using System.ServiceModel.Activation;
 using System.Text;
 using System.Web.Script.Services;
 
 namespace FeriaVirtualServices.Services
 {
-    public class ServiceVentas : IServiceVentas
+    // NOTE: You can use the "Rename" command on the "Refactor" menu to change the class name "ServiceProductos" in both code and config file together.
+    public class ServiceProductos : IServiceProductos
     {
         AuxiliarFunctions f = new AuxiliarFunctions();
-        //Método que obtiene todas las ventas
+
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-        public List<Ventas> GetVentas()
+        public List<Productos> GetProductos()
         {
-            List<Ventas> datos = new List<Ventas>();
+            List<Productos> datos = new List<Productos>();
             try
             {
                 Connection c = new Connection();
@@ -30,24 +30,22 @@ namespace FeriaVirtualServices.Services
                 OracleCommand comm = new OracleCommand();
                 comm.Connection = c.Conn;
                 // retorna usuario y perfil
-                comm.CommandText = "pkg_ventas.select_ventas";
+                comm.CommandText = "pkg_productos.select_productos";
                 comm.CommandType = System.Data.CommandType.StoredProcedure;
-                comm.Parameters.Add("cur_ventas", OracleDbType.RefCursor).Direction = System.Data.ParameterDirection.Output;
+                comm.Parameters.Add("cur_productos", OracleDbType.RefCursor).Direction = System.Data.ParameterDirection.Output;
                 using (OracleDataReader reader = comm.ExecuteReader())
                 {
                     int id = 0;
-                    string username = string.Empty;
-                    DateTime date = new DateTime();
-                    string tipoEstado = string.Empty;
-                    string tipoVenta = string.Empty;
+                    string nombre = string.Empty;
+                    string descripcion = string.Empty;
+                    string tipoProducto = string.Empty;
                     while (reader.Read())
                     {
                         id = Convert.ToInt32(reader[0]);
-                        username = reader[1].ToString();
-                        date = (DateTime)(reader[2]);
-                        tipoEstado = reader[3].ToString();
-                        tipoVenta = reader[4].ToString();
-                        datos.Add(new Ventas(id, username, date, tipoEstado, tipoVenta));
+                        nombre = reader[1].ToString();
+                        descripcion = reader[2].ToString();
+                        tipoProducto = reader[3].ToString();
+                        datos.Add(new Productos(id, nombre, descripcion, tipoProducto));
                     }
                 }
                 c.Close();
@@ -61,7 +59,7 @@ namespace FeriaVirtualServices.Services
         }
 
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-        public string UpdateVenta(int id, DateTime fecha, int fk_tipoEstado)
+        public string UpdateProducto(int id, string nombre, string descripcion, int id_tipoproducto)
         {
             string r = string.Empty;
             try
@@ -71,22 +69,23 @@ namespace FeriaVirtualServices.Services
                 OracleCommand comm = new OracleCommand();
                 comm.Connection = c.Conn;
                 // retorna usuario y perfil
-                comm.CommandText = "pkg_ventas.update_ventas";
+                comm.CommandText = "pkg_productos.update_productos";
                 comm.CommandType = System.Data.CommandType.StoredProcedure;
-                comm.Parameters.Add("in_id_venta", OracleDbType.Int32, 38, "id_venta").Value = id;
-                comm.Parameters.Add("in_fecha", OracleDbType.Date, 30, "fecha").Value = fecha;
-                comm.Parameters.Add("in_id_tipoestado", OracleDbType.Int32, 38, "id_tipoestado").Value = fk_tipoEstado;
+                comm.Parameters.Add("in_id_producto", OracleDbType.Int32, 38, "id_producto").Value = id;
+                comm.Parameters.Add("in_nombre", OracleDbType.Varchar2, 50, "nombre").Value = nombre;
+                comm.Parameters.Add("in_descripcion", OracleDbType.Varchar2, 200, "descripcion").Value = descripcion;
+                comm.Parameters.Add("in_id_tipoproducto", OracleDbType.Int32, 38, "id_tipoproducto").Value = id_tipoproducto;
                 OracleParameter param = comm.Parameters.Add("response", OracleDbType.Int32, ParameterDirection.Output);
 
                 comm.ExecuteNonQuery();
                 var responseQuery = param.Value.ToString();
                 if (responseQuery == "1")
                 {
-                    r = "La venta ha sido actualizada";
+                    r = "El producto ha sido actualizada";
                 }
                 else
                 {
-                    r = "No se ha actualizado ninguna venta";
+                    r = "No se ha actualizado ningún producto";
                 }
 
                 c.Close();
@@ -100,7 +99,7 @@ namespace FeriaVirtualServices.Services
         }
 
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-        public string InsertVenta(int fk_usuario, DateTime fecha, int fk_tipoEstado, int fk_tipoVenta)
+        public string InsertProducto(string nombre, string descripcion, int id_tipoproducto)
         {
             string r = string.Empty;
             try
@@ -110,23 +109,23 @@ namespace FeriaVirtualServices.Services
                 OracleCommand comm = new OracleCommand();
                 comm.Connection = c.Conn;
                 // retorna usuario y perfil
-                comm.CommandText = "pkg_ventas.insert_ventas";
+                comm.CommandText = "pkg_productos.insert_productos" +
+                    "";
                 comm.CommandType = System.Data.CommandType.StoredProcedure;
-                comm.Parameters.Add("in_id_usuario", OracleDbType.Int32, 38, "id_usuario").Value = fk_usuario;
-                comm.Parameters.Add("in_fecha", OracleDbType.Date, 30, "fecha").Value = fecha;
-                comm.Parameters.Add("in_id_tipoestado", OracleDbType.Int32, 38, "id_tipoestado").Value = fk_tipoEstado;
-                comm.Parameters.Add("in_id_tipoventa", OracleDbType.Int32, 38, "id_tipoventa").Value = fk_tipoVenta;
+                comm.Parameters.Add("in_nombre", OracleDbType.Varchar2, 50, "nombre").Value = nombre;
+                comm.Parameters.Add("in_descripcion", OracleDbType.Varchar2, 200, "descripcion").Value = descripcion;
+                comm.Parameters.Add("in_id_tipoproducto", OracleDbType.Int32, 38, "in_id_tipoproducto").Value = id_tipoproducto; 
                 OracleParameter param = comm.Parameters.Add("response", OracleDbType.Int32, ParameterDirection.Output);
 
                 comm.ExecuteNonQuery();
                 var responseQuery = param.Value.ToString();
                 if (responseQuery == "1")
                 {
-                    r = "Venta Ingresada.";
+                    r = "Producto Ingresado";
                 }
                 else
                 {
-                    r = "Venta no ha sido ingresada. Consulte con el equipo técnico.";
+                    r = "Producto no ha sido ingresado. Consulte con el equipo técnico.";
                 }
 
                 c.Close();
@@ -140,7 +139,7 @@ namespace FeriaVirtualServices.Services
         }
 
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-        public string DeleteVenta(int id)
+        public string DeleteProducto(int id)
         {
             string r = string.Empty;
             try
@@ -149,21 +148,21 @@ namespace FeriaVirtualServices.Services
                 OracleDataAdapter adapter = new OracleDataAdapter();
                 OracleCommand comm = new OracleCommand();
                 comm.Connection = c.Conn;
-                
-                comm.CommandText = "pkg_ventas.delete_ventas";
+
+                comm.CommandText = "pkg_productos.delete_productos";
                 comm.CommandType = System.Data.CommandType.StoredProcedure;
-                comm.Parameters.Add("in_id_venta", OracleDbType.Int32, 38, "id_venta").Value = id;
+                comm.Parameters.Add("in_id", OracleDbType.Int32, 38, "id_producto").Value = id;
                 OracleParameter param = comm.Parameters.Add("response", OracleDbType.Int32, ParameterDirection.Output);
 
                 comm.ExecuteNonQuery();
                 var responseQuery = param.Value.ToString();
                 if (responseQuery == "1")
                 {
-                    r = "Venta eliminada.";
+                    r = "Producto eliminado.";
                 }
                 else
                 {
-                    r = "Venta no existe.";
+                    r = "Producto no existe.";
                 }
 
                 c.Close();
@@ -175,6 +174,5 @@ namespace FeriaVirtualServices.Services
             }
             return f.Return(r);
         }
-
     }
 }

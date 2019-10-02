@@ -16,7 +16,7 @@ namespace FeriaVirtualServices.Services
     {
         AuxiliarFunctions f = new AuxiliarFunctions();
 
-        public string GetTipoVentas() {
+        public List<TipoVenta> GetTipoVentas() {
             List<TipoVenta> datos = new List<TipoVenta>();
             try
             {
@@ -47,7 +47,7 @@ namespace FeriaVirtualServices.Services
             {
                 Debug.WriteLine(e.ToString());
             }
-            return f.Return(datos);
+            return datos;
         }
 
     }

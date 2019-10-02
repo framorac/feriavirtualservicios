@@ -15,6 +15,7 @@
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <WcfConfigValidationEnabled>True</WcfConfigValidationEnabled>
     <XsdCodeGenEnabled>True</XsdCodeGenEnabled>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -24,6 +25,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -32,6 +34,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
@@ -41,6 +44,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
+    <Reference Include="System.IdentityModel" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.ServiceModel.Web" />
@@ -54,13 +58,25 @@
     <Compile Include="Contracts\IServiceTipoVentas.cs" />
     <Compile Include="Contracts\IServiceTipoEstados.cs" />
     <Compile Include="Contracts\IServiceVentas.cs" />
+    <Compile Include="Contracts\IServicePerfiles.cs" />
+    <Compile Include="Contracts\IServiceContratos.cs" />
+    <Compile Include="Contracts\IServiceTipoProductos.cs" />
+    <Compile Include="Contracts\IServiceProductos.cs" />
+    <Compile Include="Services\ServiceContratos.cs" />
+    <Compile Include="Services\ServicePerfiles.cs" />
+    <Compile Include="Services\ServiceProductos.cs" />
     <Compile Include="Services\ServiceTipoEstados.cs" />
+    <Compile Include="Services\ServiceTipoProductos.cs" />
     <Compile Include="Services\ServiceTipoVentas.cs" />
     <Compile Include="Services\ServiceUsuarios.cs" />
     <Compile Include="Services\ServiceVentas.cs" />
     <Compile Include="Structures\AuxiliarFunctions.cs" />
     <Compile Include="Structures\Connection.cs" />
+    <Compile Include="Structures\Tables\Contratos.cs" />
+    <Compile Include="Structures\Tables\Perfiles.cs" />
+    <Compile Include="Structures\Tables\Productos.cs" />
     <Compile Include="Structures\Tables\TipoEstado.cs" />
+    <Compile Include="Structures\Tables\TipoProducto.cs" />
     <Compile Include="Structures\Tables\TipoVenta.cs" />
     <Compile Include="Structures\Tables\Usuario.cs" />
     <Compile Include="Structures\Tables\Ventas.cs" />

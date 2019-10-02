@@ -8,11 +8,11 @@ using System.Text;
 
 namespace FeriaVirtualServices.Services
 {
-    // NOTE: You can use the "Rename" command on the "Refactor" menu to change the interface name "IServiceTipoEstados" in both code and config file together.
+    // NOTE: You can use the "Rename" command on the "Refactor" menu to change the interface name "IServicePerfiles" in both code and config file together.
     [ServiceContract]
-    public interface IServiceTipoEstados
+    public interface IServicePerfiles
     {
         [OperationContract]
-        List<TipoEstado> GetTipoEstados();
+        List<Perfiles> GetPerfiles();
     }
 }

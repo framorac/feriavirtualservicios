@@ -8,20 +8,23 @@ using System.Threading.Tasks;
 namespace FeriaVirtualServices.Structures.Tables
 {
     [DataContract]
-    public class TipoVenta
+    public class Productos
     {
         [DataMember]
         public int Id { get; set; }
         [DataMember]
-        public string Tipo { get; set; }
+        public string Nombre { get; set; }
         [DataMember]
         public string Descripcion { get; set; }
+        [DataMember]
+        public string TipoProducto { get; set; }
 
-        public TipoVenta(int id, string tipo, string descripcion)
+        public Productos(int id, string nombre, string descripcion, string tipoProducto)
         {
-            this.Id = id;
-            this.Tipo = tipo;
-            this.Descripcion = descripcion;
+            Id = id;
+            Nombre = nombre;
+            Descripcion = descripcion;
+            TipoProducto = tipoProducto;
         }
     }
 }
