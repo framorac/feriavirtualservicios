@@ -34,7 +34,7 @@ namespace FeriaVirtualServices.Services
                 OracleCommand comm = new OracleCommand();
                 comm.Connection = c.Conn;
                 // retorna usuario y perfil
-                comm.CommandText = "pkg_usuarios.login_usuario";
+                comm.CommandText = "pkg_usuariosv2.login_usuario";
                 comm.CommandType = System.Data.CommandType.StoredProcedure;
                 comm.Parameters.Add("in_username", OracleDbType.Varchar2, 30, "username").Value = username;  
                 comm.Parameters.Add("in_password", OracleDbType.Varchar2, 20, "password").Value = password;
@@ -59,7 +59,7 @@ namespace FeriaVirtualServices.Services
                 Debug.WriteLine(e.ToString());
             }
 
-            return isFill ? f.Return(valores) : f.Return("Usuario y/o contraseño no válidos");
+            return isFill ? isFill.ToString() : f.Return("Usuario y/o contraseño no válidos");
         }
 
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
@@ -100,12 +100,13 @@ namespace FeriaVirtualServices.Services
                         datos.Add(new Usuario(id, usuario, password, perfil, nombre, apellido, email, fecha));
                     }
                 }
-                c.Close(); //Cierra conexion
+                c.Close();
             }
             catch (Exception e) {
                 Debug.WriteLine(e.ToString());
             }
-            return f.Return(datos); //retorna datos
+            return datos;
+            //return f.Return(datos);
         }
 
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
@@ -122,10 +123,14 @@ namespace FeriaVirtualServices.Services
                 // retorna usuario y perfil
                 comm.CommandText = "pkg_usuariosv2.update_usuario";
                 comm.CommandType = System.Data.CommandType.StoredProcedure;
-                comm.Parameters.Add("in_id_usuario", OracleDbType.Int32, 38 , "id_usuario").Value = id;
+                comm.Parameters.Add("in_id", OracleDbType.Int32, 38 , "id").Value = id;
                 comm.Parameters.Add("in_username", OracleDbType.Varchar2, 30, "username").Value = username;
                 comm.Parameters.Add("in_password", OracleDbType.Varchar2, 20, "password").Value = password;
                 comm.Parameters.Add("in_id_perfil", OracleDbType.Int32, 38, "id_perfil").Value = fk_perfil;
+                comm.Parameters.Add("in_nombre", OracleDbType.Varchar2, 50, "nombre").Value = nombre;
+                comm.Parameters.Add("in_apellido", OracleDbType.Varchar2, 50, "apellido").Value = apellido;
+                comm.Parameters.Add("in_email", OracleDbType.Varchar2, 150, "email").Value = email;
+                comm.Parameters.Add("in_fecha", OracleDbType.Date, 200, "fecha_creacion").Value = fecha;
                 OracleParameter param = comm.Parameters.Add("response", OracleDbType.Int32, ParameterDirection.Output);
 
                 comm.ExecuteNonQuery();
@@ -149,7 +154,7 @@ namespace FeriaVirtualServices.Services
         }
 
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-        public string InsertUsuario(string username, string password, int fk_perfil, string nombre, string apellido, string email, DateTime fecha)
+        public string InsertUsuario(string username, string password, int id_perfil, string nombre, string apellido, string email, DateTime fecha)
         {
             string r = string.Empty;
             try
@@ -161,11 +166,15 @@ namespace FeriaVirtualServices.Services
                 OracleCommand comm = new OracleCommand();
                 comm.Connection = c.Conn;
                 // retorna usuario y perfil
-                comm.CommandText = "pkg_usuarios.insert_usuario";
+                comm.CommandText = "pkg_usuariosv2.insert_usuario";
                 comm.CommandType = System.Data.CommandType.StoredProcedure;
                 comm.Parameters.Add("in_username", OracleDbType.Varchar2, 30, "username").Value = username;
                 comm.Parameters.Add("in_password", OracleDbType.Varchar2, 20, "password").Value = password;
-                comm.Parameters.Add("in_id_perfil", OracleDbType.Int32, 38, "id_perfil").Value = fk_perfil;
+                comm.Parameters.Add("in_id_perfil", OracleDbType.Int32, 38, "id_perfil").Value = id_perfil;
+                comm.Parameters.Add("in_nombre", OracleDbType.Varchar2, 50, "nombre").Value = nombre;
+                comm.Parameters.Add("in_apellido", OracleDbType.Varchar2, 50, "apellido").Value = apellido;
+                comm.Parameters.Add("in_email", OracleDbType.Varchar2, 100, "email").Value = email;
+                comm.Parameters.Add("in_fecha", OracleDbType.Date, 50, "fecha_creacion").Value = fecha;
                 OracleParameter param = comm.Parameters.Add("response", OracleDbType.Int32, ParameterDirection.Output);
 
                 comm.ExecuteNonQuery();
@@ -201,9 +210,9 @@ namespace FeriaVirtualServices.Services
                 OracleCommand comm = new OracleCommand();
                 comm.Connection = c.Conn;
                 // retorna usuario y perfil
-                comm.CommandText = "pkg_usuarios.delete_usuario";
+                comm.CommandText = "pkg_usuariosv2.delete_usuario";
                 comm.CommandType = System.Data.CommandType.StoredProcedure;
-                comm.Parameters.Add("in_id_usuario", OracleDbType.Int32, 38, "id").Value = id;
+                comm.Parameters.Add("in_id", OracleDbType.Int32, 38, "id").Value = id;
                 OracleParameter param = comm.Parameters.Add("response", OracleDbType.Int32, ParameterDirection.Output);
 
                 comm.ExecuteNonQuery();
