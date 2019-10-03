@@ -34,7 +34,7 @@ namespace FeriaVirtualServices.Services
                 OracleCommand comm = new OracleCommand();
                 comm.Connection = c.Conn;
                 // retorna usuario y perfil
-                comm.CommandText = "pkg_usuarios.login_usuario";
+                comm.CommandText = "pkg_usuariosv2.login_usuario";
                 comm.CommandType = System.Data.CommandType.StoredProcedure;
                 comm.Parameters.Add("in_username", OracleDbType.Varchar2, 30, "username").Value = username;  
                 comm.Parameters.Add("in_password", OracleDbType.Varchar2, 20, "password").Value = password;
@@ -59,7 +59,7 @@ namespace FeriaVirtualServices.Services
                 Debug.WriteLine(e.ToString());
             }
 
-            return isFill ? f.Return(valores) : f.Return("Usuario y/o contraseño no válidos");
+            return isFill ? isFill.ToString() : f.Return("Usuario y/o contraseño no válidos");
         }
 
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
