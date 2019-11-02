@@ -38,16 +38,14 @@ namespace FeriaVirtualServices.Services
                     int id = 0;
                     string username = string.Empty;
                     DateTime date = new DateTime();
-                    string tipoEstado = string.Empty;
                     string tipoVenta = string.Empty;
                     while (reader.Read())
                     {
                         id = Convert.ToInt32(reader[0]);
                         username = reader[1].ToString();
                         date = (DateTime)(reader[2]);
-                        tipoEstado = reader[3].ToString();
-                        tipoVenta = reader[4].ToString();
-                        datos.Add(new Ventas(id, username, date, tipoEstado, tipoVenta));
+                        tipoVenta = reader[3].ToString();
+                        datos.Add(new Ventas(id, username, date, tipoVenta));
                     }
                 }
                 c.Close();
@@ -61,46 +59,7 @@ namespace FeriaVirtualServices.Services
         }
 
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-        public string UpdateVenta(int id, DateTime fecha, int fk_tipoEstado)
-        {
-            string r = string.Empty;
-            try
-            {
-                Connection c = new Connection();
-                OracleDataAdapter adapter = new OracleDataAdapter();
-                OracleCommand comm = new OracleCommand();
-                comm.Connection = c.Conn;
-                // retorna usuario y perfil
-                comm.CommandText = "pkg_ventas.update_ventas";
-                comm.CommandType = System.Data.CommandType.StoredProcedure;
-                comm.Parameters.Add("in_id_venta", OracleDbType.Int32, 38, "id_venta").Value = id;
-                comm.Parameters.Add("in_fecha", OracleDbType.Date, 30, "fecha").Value = fecha;
-                comm.Parameters.Add("in_id_tipoestado", OracleDbType.Int32, 38, "id_tipoestado").Value = fk_tipoEstado;
-                OracleParameter param = comm.Parameters.Add("response", OracleDbType.Int32, ParameterDirection.Output);
-
-                comm.ExecuteNonQuery();
-                var responseQuery = param.Value.ToString();
-                if (responseQuery == "1")
-                {
-                    r = "La venta ha sido actualizada";
-                }
-                else
-                {
-                    r = "No se ha actualizado ninguna venta";
-                }
-
-                c.Close();
-            }
-            catch (Exception e)
-            {
-                r = "Ha ocurrido un error";
-                Debug.WriteLine(e.ToString());
-            }
-            return f.Return(r);
-        }
-
-        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-        public string InsertVenta(int fk_usuario, DateTime fecha, int fk_tipoEstado, int fk_tipoVenta)
+        public string InsertVenta(int fk_usuario, DateTime fecha, int fk_tipoVenta)
         {
             string r = string.Empty;
             try
@@ -114,7 +73,6 @@ namespace FeriaVirtualServices.Services
                 comm.CommandType = System.Data.CommandType.StoredProcedure;
                 comm.Parameters.Add("in_id_usuario", OracleDbType.Int32, 38, "id_usuario").Value = fk_usuario;
                 comm.Parameters.Add("in_fecha", OracleDbType.Date, 30, "fecha").Value = fecha;
-                comm.Parameters.Add("in_id_tipoestado", OracleDbType.Int32, 38, "id_tipoestado").Value = fk_tipoEstado;
                 comm.Parameters.Add("in_id_tipoventa", OracleDbType.Int32, 38, "id_tipoventa").Value = fk_tipoVenta;
                 OracleParameter param = comm.Parameters.Add("response", OracleDbType.Int32, ParameterDirection.Output);
 
@@ -175,6 +133,96 @@ namespace FeriaVirtualServices.Services
             }
             return f.Return(r);
         }
+
+        /// <summary>
+        /// Esta función puede ser confunsa; en realidad realiza un insert en la tabla histórico_estado_ventas
+        /// Lo cual realiza un seguimiento para cada cambio de estado, con un afecha automática, sin tener
+        /// que ingresarlo como parámetros de la vista de usuario.
+        /// Tener cuidado que la tabla de ventas, ya no recibe la clave foránea del tipo de estado, ahora esta tabla es
+        /// la que la envia al histórico de cambios de estado.
+        /// </summary>
+        /// <param name="id_venta">Id de la venta que se quiere actualizar</param>
+        /// <param name="id_estado">Id del estado al cual se queire actualizar</param>
+        /// <returns></returns>
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public string UpdateVenta(int id_estado, int id_venta)
+        {
+            string r = string.Empty;
+            try
+            {
+                Connection c = new Connection();
+                OracleDataAdapter adapter = new OracleDataAdapter();
+                OracleCommand comm = new OracleCommand();
+                comm.Connection = c.Conn;
+                // retorna usuario y perfil
+                comm.CommandText = "pkg_historico_estado_ventas.insert_hev";
+                comm.CommandType = System.Data.CommandType.StoredProcedure;
+                comm.Parameters.Add("in_id_estado", OracleDbType.Int32, 38, "id_estado").Value = id_estado;
+                comm.Parameters.Add("in_id_venta", OracleDbType.Int32, 38, "id_venta").Value = id_venta;
+                comm.Parameters.Add("in_fecha", OracleDbType.Date, 30, "fecha").Value = DateTime.Now;
+                OracleParameter param = comm.Parameters.Add("response", OracleDbType.Int32, ParameterDirection.Output);
+
+                comm.ExecuteNonQuery();
+                var responseQuery = param.Value.ToString();
+                if (responseQuery == "1")
+                {
+                    r = "La venta ha sido actualizada";
+                }
+                else
+                {
+                    r = "No se ha actualizado ninguna venta";
+                }
+
+                c.Close();
+            }
+            catch (Exception e)
+            {
+                r = "Ha ocurrido un error";
+                Debug.WriteLine(e.ToString());
+            }
+            return f.Return(r);
+
+        }
+
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public List<HistoricoEstadoVentas> GetHistóricoEstadoVentas()
+        {
+            List<HistoricoEstadoVentas> datos = new List<HistoricoEstadoVentas>();
+            try
+            {
+                Connection c = new Connection();
+                OracleDataAdapter adapter = new OracleDataAdapter();
+                OracleCommand comm = new OracleCommand();
+                comm.Connection = c.Conn;
+                // retorna usuario y perfil
+                comm.CommandText = "pkg_historico_estado_ventas.select_hev";
+                comm.CommandType = System.Data.CommandType.StoredProcedure;
+                comm.Parameters.Add("cur_hev", OracleDbType.RefCursor).Direction = System.Data.ParameterDirection.Output;
+                using (OracleDataReader reader = comm.ExecuteReader())
+                {
+                    int id = 0;
+                    string tipoEstado = string.Empty;
+                    int id_venta = 0;
+                    DateTime fecha = DateTime.Now;
+                    while (reader.Read())
+                    {
+                        id = Convert.ToInt32(reader[0]);
+                        tipoEstado = reader[1].ToString();
+                        id_venta = Convert.ToInt32(reader[2]);
+                        fecha = (DateTime)(reader[3]);
+                        datos.Add(new HistoricoEstadoVentas(id, tipoEstado, id_venta, fecha));
+                    }
+                }
+                c.Close();
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.ToString());
+            }
+            //return f.Return(datos);
+            return datos;
+        }
+
 
     }
 }

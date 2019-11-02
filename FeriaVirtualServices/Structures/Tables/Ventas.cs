@@ -17,17 +17,30 @@ namespace FeriaVirtualServices.Structures.Tables
         [DataMember]
         public DateTime fecha { get; set; }
         [DataMember]
-        public string tipoEstado { get; set; }
-        [DataMember]
         public string tipoVenta { get; set; }
 
-        public Ventas(int id, string username, DateTime fecha, string tipoEstado, string tipoVenta)
+        public Ventas(int id, string username, DateTime fecha, string tipoVenta)
         {
             this.id = id;
             this.username = username;
             this.fecha = fecha;
-            this.tipoEstado = tipoEstado;
             this.tipoVenta = tipoVenta;
+        }
+    }
+
+    [DataContract]
+    public class HistoricoEstadoVentas {
+        public int Id { get; set; }
+        public string TipoEstado { get; set; }
+        public int Id_venta { get; set; }
+        public DateTime Fecha { get; set; }
+
+        public HistoricoEstadoVentas(int id, string tipoEstado, int id_venta, DateTime fecha)
+        {
+            Id = id;
+            TipoEstado = tipoEstado;
+            Id_venta = id_venta;
+            Fecha = fecha;
         }
     }
 }
