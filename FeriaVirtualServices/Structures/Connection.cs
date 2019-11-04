@@ -20,8 +20,8 @@ namespace FeriaVirtualServices.Structures
             try
             {
                 //string connectionString = "User Id = system; Password = 123; Data Source=localhost";
-                string connectionString = "User Id = duocadmin; Password = gEB8UG8zpp8xY8TFv6Ly; Data Source=(DESCRIPTION=" +
-                    "(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=feriavirtual.cr9n8uykvimk.us-east-2.rds.amazonaws.com)" +
+                string connectionString = "User Id = duocadmin; Password = OhMuHy8BoB1fwFrnaXMD; Data Source=(DESCRIPTION=" +
+                    "(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=feriavirtual.cfevwjkis4bg.us-west-2.rds.amazonaws.com)" +
                     "(PORT=1521)))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=ORCL)));";
                 // Instalar el paquete NUGET Oracle.ManagedDataAccess
                 Conn = new OracleConnection(connectionString);

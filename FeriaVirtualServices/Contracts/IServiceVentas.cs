@@ -14,15 +14,18 @@ namespace FeriaVirtualServices.Services
     public interface IServiceVentas
     {
         [OperationContract]
-        List<Ventas> GetVentas();
+        List<Ventas> GetVentas();        
 
         [OperationContract]
-        string UpdateVenta(int id, DateTime fecha, int fk_tipoEstado);
-
-        [OperationContract]
-        string InsertVenta(int fk_usuario, DateTime fecha, int fk_tipoEstado, int fk_tipoVenta);
+        string InsertVenta(int fk_usuario, DateTime fecha, int fk_tipoVenta);
 
         [OperationContract]
         string DeleteVenta(int id);
+
+        [OperationContract]
+        string UpdateVenta(int id_venta, int id_estado);
+
+        [OperationContract]
+        List<HistoricoEstadoVentas> GetHistóricoEstadoVentas();
     }
 }
