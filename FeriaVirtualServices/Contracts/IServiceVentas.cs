@@ -27,5 +27,8 @@ namespace FeriaVirtualServices.Services
 
         [OperationContract]
         List<HistoricoEstadoVentas> GetHistóricoEstadoVentas();
+
+        [OperationContract]
+        List<GenericString> GetVentaEspecífica(int idVenta, int tipoConsulta);
     }
 }

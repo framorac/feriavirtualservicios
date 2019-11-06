@@ -30,9 +30,13 @@ namespace FeriaVirtualServices.Structures.Tables
 
     [DataContract]
     public class HistoricoEstadoVentas {
+        [DataMember]
         public int Id { get; set; }
+        [DataMember]
         public string TipoEstado { get; set; }
+        [DataMember]
         public int Id_venta { get; set; }
+        [DataMember]
         public DateTime Fecha { get; set; }
 
         public HistoricoEstadoVentas(int id, string tipoEstado, int id_venta, DateTime fecha)
@@ -41,6 +45,21 @@ namespace FeriaVirtualServices.Structures.Tables
             TipoEstado = tipoEstado;
             Id_venta = id_venta;
             Fecha = fecha;
+        }
+    }
+
+    [DataContract]
+    public class GenericString
+    {
+        [DataMember]
+        public int Id { get; set; }
+        [DataMember]
+        public string Generic { get; set; }
+
+        public GenericString(int id, string generic)
+        {
+            Id = id;
+            Generic = generic;
         }
     }
 }
