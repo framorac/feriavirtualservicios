@@ -223,50 +223,36 @@ namespace FeriaVirtualServices.Services
             return datos;
         }
 
-        /// <summary>
-        /// Método que devuelve una consulta específica de acuerdo al parámetros ingresado.
-        /// </summary>
-        /// <param name="idVenta">id de la venta</param>
-        /// <param name="tipoConsulta">si es 0 corresponde devuelve nombre y apellido, 1 tipo de estado y 2 tipo de venta</param>
-        /// <returns></returns>
-        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-        public List<GenericString> GetVentaEspecífica(int idVenta, int tipoConsulta)
+        public List<VentaCompleta> GetVentaCompleta(int idTipoEstado, int idTipoVenta)
         {
-            List<GenericString> datos = new List<GenericString>();
+            List<VentaCompleta> datos = new List<VentaCompleta>();
             try
             {
                 Connection c = new Connection();
                 OracleDataAdapter adapter = new OracleDataAdapter();
                 OracleCommand comm = new OracleCommand();
                 comm.Connection = c.Conn;
-
-                switch (tipoConsulta) {
-                    case 0:
-                        comm.CommandText = "pkg_ventas.select_ventas_user";
-                        break;
-                    case 1:
-                        comm.CommandText = "pkg_ventas.select_ventas_estado";
-                        break;
-                    case 2:
-                        comm.CommandText = "pkg_ventas.select_ventas_tipo";
-                        break;
-                    default:
-                        return datos;
-
-                }
-               
+                // retorna usuario y perfil
+                comm.CommandText = "pkg_ventas.select_ventas_completa";
                 comm.CommandType = System.Data.CommandType.StoredProcedure;
-                comm.Parameters.Add("in_id", OracleDbType.Int32, 38, "id_venta").Value = idVenta;
+                comm.Parameters.Add("in_id_estado", OracleDbType.Int32, 38, "id_estado").Value = idTipoEstado;
+                comm.Parameters.Add("in_id_tipoventa", OracleDbType.Int32, 38, "id_tipoventa").Value = idTipoVenta;
                 comm.Parameters.Add("cur_ventas", OracleDbType.RefCursor).Direction = System.Data.ParameterDirection.Output;
                 using (OracleDataReader reader = comm.ExecuteReader())
                 {
                     int id = 0;
-                    string generic = string.Empty;
+                    string tipoEstado = string.Empty;
+                    string tipoVenta = string.Empty;
+                    string nombre = string.Empty;
+                    DateTime fecha = DateTime.Now;
                     while (reader.Read())
                     {
                         id = Convert.ToInt32(reader[0]);
-                        generic = reader[1].ToString();
-                        datos.Add(new GenericString(id, generic));
+                        nombre = reader[1].ToString();
+                        tipoVenta = reader[2].ToString();
+                        tipoEstado = reader[3].ToString();
+                        fecha = (DateTime)(reader[4]);
+                        datos.Add(new VentaCompleta(id, nombre, tipoVenta, tipoEstado, fecha));
                     }
                 }
                 c.Close();
@@ -275,9 +261,7 @@ namespace FeriaVirtualServices.Services
             {
                 Debug.WriteLine(e.ToString());
             }
-            //return f.Return(datos);
             return datos;
         }
-
     }
 }

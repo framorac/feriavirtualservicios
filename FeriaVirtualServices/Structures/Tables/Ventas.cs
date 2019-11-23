@@ -62,4 +62,27 @@ namespace FeriaVirtualServices.Structures.Tables
             Generic = generic;
         }
     }
+
+    [DataContract]
+    public class VentaCompleta {
+        [DataMember]
+        public int Id { get; set; }
+        [DataMember]
+        public string NombreApellido { get; set; }
+        [DataMember]
+        public string Tipo { get; set; }
+        [DataMember]
+        public string Estado{ get; set; }
+        [DataMember]
+        public DateTime Fecha{ get; set; }
+
+        public VentaCompleta(int id, string nombreApellido, string tipo, string estado, DateTime fecha)
+        {
+            Id = id;
+            NombreApellido = nombreApellido;
+            Tipo = tipo;
+            Estado = estado;
+            Fecha = fecha;
+        }
+    }
 }
