@@ -23,7 +23,7 @@ namespace FeriaVirtualServices.Services
         string DeleteVenta(int id);
 
         [OperationContract]
-        string UpdateVenta(int id_venta, int id_estado);
+        string UpdateVenta(int id_estado, int id_venta);
 
         [OperationContract]
         List<HistoricoEstadoVentas> GetHistóricoEstadoVentas();
