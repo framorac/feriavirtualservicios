@@ -23,12 +23,12 @@ namespace FeriaVirtualServices.Services
         string DeleteVenta(int id);
 
         [OperationContract]
-        string UpdateVenta(int id_venta, int id_estado);
+        string UpdateVenta(int id_estado, int id_venta);
 
         [OperationContract]
         List<HistoricoEstadoVentas> GetHistóricoEstadoVentas();
 
         [OperationContract]
-        List<GenericString> GetVentaEspecífica(int idVenta, int tipoConsulta);
+        List<VentaCompleta> GetVentaCompleta(int idTipoEstado, int idTipoVenta);
     }
 }

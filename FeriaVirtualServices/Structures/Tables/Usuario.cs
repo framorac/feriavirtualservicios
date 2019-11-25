@@ -35,7 +35,7 @@ namespace FeriaVirtualServices.Structures.Tables
         //    Password = password;
         //    Perfil = perfil;
         //}
-
+        public Usuario() { }
         public Usuario(int id, string username, string password, string perfil, string nombre, string apellido, string email, DateTime fechaCreacion)
         {
             this.id = id;
