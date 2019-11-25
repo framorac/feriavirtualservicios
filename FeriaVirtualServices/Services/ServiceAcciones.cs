@@ -88,7 +88,6 @@ namespace FeriaVirtualServices.Services
                 // Único ganador
                 if (ofertasMenorPrecio.Count == 1)
                 {
-                    sv.UpdateVenta(2, idVenta);
                     usuario = su.GetUsuarios().Where(x => x.Username == ofertasMenorPrecio.FirstOrDefault().Item3).FirstOrDefault();
                 }
                 // En caso de que hayan 2 o más ofertas con el mismo precio, seguimos con el siguiente criterio de selección
@@ -111,6 +110,7 @@ namespace FeriaVirtualServices.Services
                 StringBuilder mensaje = new StringBuilder();
                 mensaje.AppendFormat("Su solicitud ya tiene un productor ganador, cuyos datos son. Nombre: {0}, Apellido: {0}. Ahora su solicitud ha pasado al estado de las subastas de transporte.", usuario.Nombre, usuario.Apellido);
                 EnviarCorreo(email, "Solicitud se encuentra en subasta", mensaje.ToString());
+                sv.UpdateVenta(2, idVenta);
             }
 
             return usuario;
@@ -172,7 +172,6 @@ namespace FeriaVirtualServices.Services
                 // único ganador
                 if (subastasMenorPrecio.Count == 1)
                 {
-                    sv.UpdateVenta(3, idVenta);
                     usuario = su.GetUsuarios().Where(x => x.Username == subastasMenorPrecio.FirstOrDefault().Item6).FirstOrDefault();
                 }
                 // buscamos por el siguiente criterio
@@ -191,6 +190,7 @@ namespace FeriaVirtualServices.Services
                 StringBuilder mensaje = new StringBuilder();
                 mensaje.AppendFormat("Su solicitud ya tiene un transportista, cuyos datos son. Nombre: {0}, Apellido: {0}. Ahora su solicitud ha pasado al estado de las subastas de transporte.", usuario.Nombre, usuario.Apellido);
                 EnviarCorreo(email, "Solicitud se encuentra en camino", mensaje.ToString());
+                sv.UpdateVenta(3, idVenta);
             }
 
             return usuario;
