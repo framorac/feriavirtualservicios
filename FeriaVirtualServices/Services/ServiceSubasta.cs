@@ -8,48 +8,44 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.ServiceModel;
 using System.Text;
-using System.Web.Script.Services;
 
 namespace FeriaVirtualServices.Services
 {
-    // NOTE: You can use the "Rename" command on the "Refactor" menu to change the class name "ServiceOfertas" in both code and config file together.
-    public class ServiceOfertas : IServiceOfertas
+    // NOTE: You can use the "Rename" command on the "Refactor" menu to change the class name "ServiceSubasta" in both code and config file together.
+    public class ServiceSubasta : IServiceSubasta
     {
-
-        AuxiliarFunctions f = new AuxiliarFunctions();
-
-        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-        public List<Ofertas> GetOfertas()
+        public List<Subastas> GetSubastas()
         {
-            List<Ofertas> datos = new List<Ofertas>();
+            List<Subastas> subastas = new List<Subastas>();
             try
             {
                 Connection c = new Connection();
-                // En base de este documento: https://www.c-sharpcorner.com/article/calling-oracle-stored-procedures-from-microsoft-net/
                 OracleDataAdapter adapter = new OracleDataAdapter();
                 OracleCommand comm = new OracleCommand();
                 comm.Connection = c.Conn;
-                // retorna usuario y perfil
-                comm.CommandText = "pkg_ofertas.select_ofertas";
+                comm.CommandText = "pkg_subastas.select_subastas";
                 comm.CommandType = System.Data.CommandType.StoredProcedure;
-                comm.Parameters.Add("cur_ofertas", OracleDbType.RefCursor).Direction = System.Data.ParameterDirection.Output;
+                comm.Parameters.Add("cur_subastas", OracleDbType.RefCursor).Direction = System.Data.ParameterDirection.Output;
                 using (OracleDataReader reader = comm.ExecuteReader())
                 {
                     int id = 0;
                     string username = string.Empty;
-                    int id_venta = 0;
+                    int idOferta = 0;
                     DateTime fecha_inicio = DateTime.Now;
                     bool isCertificado = false;
-                    bool isEnvasado = false;
+                    bool isRefrigerado = false;
+                    int capacidadCarga = 0;
+                    string tipoTransporte = string.Empty;
                     while (reader.Read())
                     {
                         id = Convert.ToInt32(reader[0]);
                         username = reader[1].ToString();
-                        id_venta = Convert.ToInt32(reader[2]);
-                        fecha_inicio = Convert.ToDateTime(reader[3]);
+                        idOferta = Convert.ToInt32(reader[2]);
+                        fecha_inicio = (DateTime)(reader[3]);
                         isCertificado = Convert.ToBoolean(reader[4]);
-                        isEnvasado = Convert.ToBoolean(reader[5]);
-                        datos.Add(new Ofertas(id, username, id_venta, fecha_inicio, isCertificado, isEnvasado));
+                        isRefrigerado = Convert.ToBoolean(reader[5]);
+                        capacidadCarga = Convert.ToInt32(reader[6]);
+                        tipoTransporte = reader[7].ToString();
                     }
                 }
                 c.Close();
@@ -58,8 +54,8 @@ namespace FeriaVirtualServices.Services
             {
                 Debug.WriteLine(e.ToString());
             }
-            //return f.Return(datos);
-            return datos;
+
+            return subastas;
         }
     }
 }
