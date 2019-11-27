@@ -38,13 +38,16 @@ namespace FeriaVirtualServices.Structures.Tables
         public int Id_venta { get; set; }
         [DataMember]
         public DateTime Fecha { get; set; }
+        [DataMember]
+        public bool Activo { get; set; }
 
-        public HistoricoEstadoVentas(int id, string tipoEstado, int id_venta, DateTime fecha)
+        public HistoricoEstadoVentas(int id, string tipoEstado, int id_venta, DateTime fecha, bool activo)
         {
             Id = id;
             TipoEstado = tipoEstado;
             Id_venta = id_venta;
             Fecha = fecha;
+            Activo = activo;
         }
     }
 

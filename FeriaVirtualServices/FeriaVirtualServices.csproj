@@ -66,8 +66,10 @@
     <Compile Include="Contracts\IServiceDetalleVenta.cs" />
     <Compile Include="Contracts\IServiceAcciones.cs" />
     <Compile Include="Contracts\IServiceSubasta.cs" />
+    <Compile Include="Contracts\IServiceDetalleOferta.cs" />
     <Compile Include="Services\ServiceAcciones.cs" />
     <Compile Include="Services\ServiceContratos.cs" />
+    <Compile Include="Services\ServiceDetalleOferta.cs" />
     <Compile Include="Services\ServiceDetalleVenta.cs" />
     <Compile Include="Services\ServiceOfertas.cs" />
     <Compile Include="Services\ServicePerfiles.cs" />
@@ -81,6 +83,7 @@
     <Compile Include="Structures\AuxiliarFunctions.cs" />
     <Compile Include="Structures\Connection.cs" />
     <Compile Include="Structures\Tables\Contratos.cs" />
+    <Compile Include="Structures\Tables\DetalleOferta.cs" />
     <Compile Include="Structures\Tables\DetalleVenta.cs" />
     <Compile Include="Structures\Tables\Ofertas.cs" />
     <Compile Include="Structures\Tables\Perfiles.cs" />

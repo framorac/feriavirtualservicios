@@ -204,13 +204,19 @@ namespace FeriaVirtualServices.Services
                     string tipoEstado = string.Empty;
                     int id_venta = 0;
                     DateTime fecha = DateTime.Now;
+                    bool activo = false;
                     while (reader.Read())
                     {
                         id = Convert.ToInt32(reader[0]);
                         tipoEstado = reader[1].ToString();
                         id_venta = Convert.ToInt32(reader[2]);
                         fecha = (DateTime)(reader[3]);
-                        datos.Add(new HistoricoEstadoVentas(id, tipoEstado, id_venta, fecha));
+                        if (reader[4].ToString() == "1")
+                        {
+                            activo = true;
+                        }
+                        
+                        datos.Add(new HistoricoEstadoVentas(id, tipoEstado, id_venta, fecha, activo));
                     }
                 }
                 c.Close();

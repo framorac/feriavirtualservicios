@@ -27,10 +27,18 @@ namespace FeriaVirtualServices.Services
             ServiceOfertas so = new ServiceOfertas();
             ServiceVentas sv = new ServiceVentas();
             ServiceUsuarios su = new ServiceUsuarios();
+            ServiceDetalleOferta sdo = new ServiceDetalleOferta();
             var ofertas = so.GetOfertas();
             ofertas.Where(x => x.Id_venta == idVenta);
             var venta = sv.GetVentas().Where(x => x.id == idVenta).FirstOrDefault();
             var email = su.GetUsuarios().Where(x => x.Username == venta.username).FirstOrDefault().Email;
+            
+            // validamos si ya está en un proceso posterior.
+            var estadoVenta = sv.GetHistóricoEstadoVentas().Where(x => x.Id_venta == venta.id && x.Activo).FirstOrDefault().TipoEstado;
+            if (estadoVenta != "abierto") {
+                return usuario;
+            }
+
             if (ofertas.Count == 0)
             {
                 // Notificar al cliente que no tiene adjudicaciones
@@ -50,9 +58,9 @@ namespace FeriaVirtualServices.Services
                 List<Tuple<int, int, string, int, DateTime?>> ofertasMenorPrecio = new List<Tuple<int, int, string, int, DateTime?>>();
                 foreach (var oferta in ofertas)
                 {
-                    List<DetalleVenta> detalles = new List<DetalleVenta>();
-                    var detallesFiltrados = detalles.Where(x => oferta.Id_oferta == x.Id_oferta);
-                    var total = 0;
+
+                    List<DetalleOferta> detallesFiltrados = sdo.GetDetalleOfertas(oferta.Id_oferta);
+                    var total = -1;
                     // Guardamos el total de la oferta por todos los productos dentro de la oferta del productor.
                     foreach (var detalle in detallesFiltrados)
                     {
@@ -74,13 +82,16 @@ namespace FeriaVirtualServices.Services
                         Tuple<int, int, string, int, DateTime?> ofertaMenor = new Tuple<int, int, string, int, DateTime?>(-1,-1, string.Empty, -1, null);
                         foreach (var omp in ofertasMenorPrecio)
                         {
-                            if (omp.Item2 <= total)
+                            if (total != -1 && omp.Item2 >= total)
                             {
                                 ofertaMenor = new Tuple<int, int, string, int, DateTime?>(oferta.Id_oferta, total, oferta.Username, calidad, oferta.Fecha_inicio);
                                 break;
                             }
                         }
                         if (ofertaMenor.Item1 != -1 && ofertaMenor.Item2 != -1) {
+                            if (ofertasMenorPrecio.FirstOrDefault().Item2 > total) {
+                                ofertasMenorPrecio.Clear();
+                            }
                             ofertasMenorPrecio.Add(ofertaMenor);
                         }
                     }
@@ -131,6 +142,14 @@ namespace FeriaVirtualServices.Services
             var venta = sv.GetVentas().Where(x => x.id == idVenta).FirstOrDefault();
             var email = su.GetUsuarios().Where(x => x.Username == venta.username).FirstOrDefault().Email;
             var subastas = ss.GetSubastas();
+
+            // validamos si ya está en un proceso posterior.
+            var estadoVenta = sv.GetHistóricoEstadoVentas().Where(x => x.Id_venta == venta.id && x.Activo).FirstOrDefault().TipoEstado;
+            if (estadoVenta != "en subasta")
+            {
+                return usuario;
+            }
+
             if (subastas.Count == 0)
             {
                 EnviarCorreo(email, "Reinicio de subatas", "Su solicitud no ha tenido subastas de transporte, se realizará un nuevo proceso, agradecemos su comprensión");
