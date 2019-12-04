@@ -7,24 +7,32 @@ using System.Threading.Tasks;
 
 namespace FeriaVirtualServices.Structures.Tables
 {
+
     [DataContract]
-    public class DetalleVenta
+    public class DetalleOferta
     {
         [DataMember]
         public int Id { get; set; }
-        [DataMember]
-        public string Nombre_producto { get; set; }
+
         [DataMember]
         public int Id_oferta { get; set; }
+
+        [DataMember]
+        public string Nombre_producto { get; set; }
+
         [DataMember]
         public int Cantidad { get; set; }
 
-        public DetalleVenta(int id, string nombre_producto, int id_oferta, int cantidad)
+        [DataMember]
+        public int Precio { get; set; }
+
+        public DetalleOferta(int id, int id_oferta, string nombre_producto, int cantidad, int precio)
         {
             Id = id;
-            Nombre_producto = nombre_producto;
             Id_oferta = id_oferta;
+            Nombre_producto = nombre_producto;
             Cantidad = cantidad;
+            Precio = precio;
         }
     }
 }

@@ -4,9 +4,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Mail;
+using System.Net.Mime;
 using System.Runtime.Serialization;
 using System.ServiceModel;
 using System.Text;
+using System.Web;
 using System.Web.Script.Services;
 
 namespace FeriaVirtualServices.Services
@@ -27,15 +29,46 @@ namespace FeriaVirtualServices.Services
             ServiceOfertas so = new ServiceOfertas();
             ServiceVentas sv = new ServiceVentas();
             ServiceUsuarios su = new ServiceUsuarios();
+            ServiceDetalleOferta sdo = new ServiceDetalleOferta();
             var ofertas = so.GetOfertas();
             ofertas.Where(x => x.Id_venta == idVenta);
+            var tieneOfertas = ofertas.Where(x => x.Id_venta == idVenta).ToList();
             var venta = sv.GetVentas().Where(x => x.id == idVenta).FirstOrDefault();
             var email = su.GetUsuarios().Where(x => x.Username == venta.username).FirstOrDefault().Email;
-            if (ofertas.Count == 0)
+            
+            // validamos si ya está en un proceso posterior.
+            var estadoVenta = sv.GetHistóricoEstadoVentas().Where(x => x.Id_venta == venta.id && x.Activo).FirstOrDefault().TipoEstado;
+            if (estadoVenta != "abierto") {
+                return usuario;
+            }
+
+            if (tieneOfertas.Count == 0)
             {
                 // Notificar al cliente que no tiene adjudicaciones
+                LinkedResource img =
+                new LinkedResource(System.AppDomain.CurrentDomain.BaseDirectory + @"\IMAGENES\Frutas.jpg", MediaTypeNames.Image.Jpeg);
+                StringBuilder mensaje = new StringBuilder();
+                img.ContentId = "imagen";
+
+                mensaje.AppendFormat("<table style = 'max-width: 600px; padding: 10px; margin:0 auto; border-collapse: collapse;'>");
+                mensaje.AppendFormat("<tr>");
+                mensaje.AppendFormat("<td style='padding: 0'>");
+                mensaje.AppendFormat("<img style='padding: 0; display: block' src='cid:imagen' width='600px' height='100px'>");
+                mensaje.AppendFormat("</td>");
+                mensaje.AppendFormat("</tr>");
+                mensaje.AppendFormat("<tr>");
+                mensaje.AppendFormat("<td style='background - color: #ecf0f1'>");
+                mensaje.AppendFormat("<div style='color: #34495e; margin: 4% 10% 2%; text-align: justify;font-family: sans-serif'>");
+                mensaje.AppendFormat("<h2 style='color: #e67e22; margin: 0 0 7px'>Hola!</h2>");
+                mensaje.AppendFormat("<p style='margin: 2px; font - size: 15px'>Su solicitud ha sido <b style='color: #FF0000'>cancelada</b>, debido a que no se recibieron ofertas por parte de productores.</p>");
+                mensaje.AppendFormat("<p style='color: #b3b3b3; font-size: 12px; text-align: center;margin: 30px 0 0'>Maipo Grande 2019</p>");
+                mensaje.AppendFormat("</div>");
+                mensaje.AppendFormat("</td>");
+                mensaje.AppendFormat("</tr>");
+                mensaje.AppendFormat("</table>");
+                EnviarCorreo(email, "Solicitud Cancelada", mensaje.ToString(), img);
                 sv.UpdateVenta(5, idVenta);
-                EnviarCorreo(email, "Solicitud Cancelada", "Su solicitud ha sido cancelada, debido a que no se recibieron ofertas");
+                
             }
             else {
                 // Aquí empezamos el algoritmo para adjudicar al productor ganador
@@ -50,9 +83,9 @@ namespace FeriaVirtualServices.Services
                 List<Tuple<int, int, string, int, DateTime?>> ofertasMenorPrecio = new List<Tuple<int, int, string, int, DateTime?>>();
                 foreach (var oferta in ofertas)
                 {
-                    List<DetalleVenta> detalles = new List<DetalleVenta>();
-                    var detallesFiltrados = detalles.Where(x => oferta.Id_oferta == x.Id_oferta);
-                    var total = 0;
+
+                    List<DetalleOferta> detallesFiltrados = sdo.GetDetalleOfertas(oferta.Id_oferta);
+                    var total = -1;
                     // Guardamos el total de la oferta por todos los productos dentro de la oferta del productor.
                     foreach (var detalle in detallesFiltrados)
                     {
@@ -74,13 +107,16 @@ namespace FeriaVirtualServices.Services
                         Tuple<int, int, string, int, DateTime?> ofertaMenor = new Tuple<int, int, string, int, DateTime?>(-1,-1, string.Empty, -1, null);
                         foreach (var omp in ofertasMenorPrecio)
                         {
-                            if (omp.Item2 <= total)
+                            if (total != -1 && omp.Item2 >= total)
                             {
                                 ofertaMenor = new Tuple<int, int, string, int, DateTime?>(oferta.Id_oferta, total, oferta.Username, calidad, oferta.Fecha_inicio);
                                 break;
                             }
                         }
                         if (ofertaMenor.Item1 != -1 && ofertaMenor.Item2 != -1) {
+                            if (ofertasMenorPrecio.FirstOrDefault().Item2 > total) {
+                                ofertasMenorPrecio.Clear();
+                            }
                             ofertasMenorPrecio.Add(ofertaMenor);
                         }
                     }
@@ -107,9 +143,29 @@ namespace FeriaVirtualServices.Services
                         usuario = su.GetUsuarios().Where(x => x.Username == primeraOferta.Item3).FirstOrDefault();
                     }
                 }
+
+                LinkedResource img =
+                new LinkedResource(System.AppDomain.CurrentDomain.BaseDirectory + @"\IMAGENES\Frutas.jpg", MediaTypeNames.Image.Jpeg);
+                img.ContentId = "imagen";
                 StringBuilder mensaje = new StringBuilder();
-                mensaje.AppendFormat("Su solicitud ya tiene un productor ganador, cuyos datos son. Nombre: {0}, Apellido: {0}. Ahora su solicitud ha pasado al estado de las subastas de transporte.", usuario.Nombre, usuario.Apellido);
-                EnviarCorreo(email, "Solicitud se encuentra en subasta", mensaje.ToString());
+
+                mensaje.AppendFormat("<table style = 'max-width: 600px; padding: 10px; margin:0 auto; border-collapse: collapse;'>");
+                mensaje.AppendFormat("<tr>");
+                mensaje.AppendFormat("<td style='padding: 0'>");
+                mensaje.AppendFormat("<img style='padding: 0; display: block' src='cid:imagen' width='600px' height='100px'>");
+                mensaje.AppendFormat("</td>");
+                mensaje.AppendFormat("</tr>");
+                mensaje.AppendFormat("<tr>");
+                mensaje.AppendFormat("<td style='background - color: #ecf0f1'>");
+                mensaje.AppendFormat("<div style='color: #34495e; margin: 4% 10% 2%; text-align: justify;font-family: sans-serif'>");
+                mensaje.AppendFormat("<h2 style='color: #e67e22; margin: 0 0 7px'>Hola!</h2>");
+                mensaje.AppendFormat("<p style='margin: 2px; font - size: 15px'>Su solicitud ya tiene un productor ganador, cuyos datos son. Nombre: {0}, Apellido: {0}. Ahora su solicitud ha pasado al estado <b>En subasta</b>, para la subasta de transporte.</p>", usuario.Nombre, usuario.Apellido);
+                mensaje.AppendFormat("<p style='color: #b3b3b3; font-size: 12px; text-align: center;margin: 30px 0 0'>Maipo Grande 2019</p>");
+                mensaje.AppendFormat("</div>");
+                mensaje.AppendFormat("</td>");
+                mensaje.AppendFormat("</tr>");
+                mensaje.AppendFormat("</table>");
+                EnviarCorreo(email, "Solicitud se encuentra en subasta", mensaje.ToString(), img);
                 sv.UpdateVenta(2, idVenta);
             }
 
@@ -123,7 +179,8 @@ namespace FeriaVirtualServices.Services
         /// <param name="idVenta"></param>
         /// <returns>Retorna el usuario que se ha adjudicado la oferta/venta</returns>
         /// [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-        public Usuario AdjudicarTransportista(int idVenta) {
+        public Usuario AdjudicarTransportista(int idVenta)
+        {
             Usuario usuario = new Usuario();
             ServiceSubasta ss = new ServiceSubasta();
             ServiceVentas sv = new ServiceVentas();
@@ -131,9 +188,38 @@ namespace FeriaVirtualServices.Services
             var venta = sv.GetVentas().Where(x => x.id == idVenta).FirstOrDefault();
             var email = su.GetUsuarios().Where(x => x.Username == venta.username).FirstOrDefault().Email;
             var subastas = ss.GetSubastas();
+
+            // validamos si ya está en un proceso posterior.
+            var estadoVenta = sv.GetHistóricoEstadoVentas().Where(x => x.Id_venta == venta.id && x.Activo).FirstOrDefault().TipoEstado;
+            if (estadoVenta != "en subasta")
+            {
+                return usuario;
+            }
+
             if (subastas.Count == 0)
             {
-                EnviarCorreo(email, "Reinicio de subatas", "Su solicitud no ha tenido subastas de transporte, se realizará un nuevo proceso, agradecemos su comprensión");
+                LinkedResource img =
+                new LinkedResource(System.AppDomain.CurrentDomain.BaseDirectory + @"\IMAGENES\Frutas.jpg", MediaTypeNames.Image.Jpeg);
+                img.ContentId = "imagen";
+                StringBuilder mensaje = new StringBuilder();
+
+                mensaje.AppendFormat("<table style = 'max-width: 600px; padding: 10px; margin:0 auto; border-collapse: collapse;'>");
+                mensaje.AppendFormat("<tr>");
+                mensaje.AppendFormat("<td style='padding: 0'>");
+                mensaje.AppendFormat("<img style='padding: 0; display: block' src='cid:imagen' width='600px' height='100px'>");
+                mensaje.AppendFormat("</td>");
+                mensaje.AppendFormat("</tr>");
+                mensaje.AppendFormat("<tr>");
+                mensaje.AppendFormat("<td style='background - color: #ecf0f1'>");
+                mensaje.AppendFormat("<div style='color: #34495e; margin: 4% 10% 2%; text-align: justify;font-family: sans-serif'>");
+                mensaje.AppendFormat("<h2 style='color: #e67e22; margin: 0 0 7px'>Hola!</h2>");
+                mensaje.AppendFormat("<p style='margin: 2px; font - size: 15px'>Su solicitud no ha tenido subastas de transporte, se realizará un nuevo proceso de subasta, agradecemos su comprensión</p>");
+                mensaje.AppendFormat("<p style='color: #b3b3b3; font-size: 12px; text-align: center;margin: 30px 0 0'>Maipo Grande 2019</p>");
+                mensaje.AppendFormat("</div>");
+                mensaje.AppendFormat("</td>");
+                mensaje.AppendFormat("</tr>");
+                mensaje.AppendFormat("</table>");
+                EnviarCorreo(email, "Reinicio de subastas", mensaje.ToString(), img);
             }
             else {
                 // ITEM1: IdSubasta:
@@ -187,9 +273,30 @@ namespace FeriaVirtualServices.Services
                         usuario = su.GetUsuarios().Where(x => x.Username == primeraSubasta.Item6).FirstOrDefault();
                     }
                 }
+
+                //Cuerpo del correo
+                LinkedResource img =
+                new LinkedResource(System.AppDomain.CurrentDomain.BaseDirectory + @"\IMAGENES\Frutas.jpg", MediaTypeNames.Image.Jpeg);
+                img.ContentId = "imagen";
                 StringBuilder mensaje = new StringBuilder();
-                mensaje.AppendFormat("Su solicitud ya tiene un transportista, cuyos datos son. Nombre: {0}, Apellido: {0}. Ahora su solicitud ha pasado al estado de las subastas de transporte.", usuario.Nombre, usuario.Apellido);
-                EnviarCorreo(email, "Solicitud se encuentra en camino", mensaje.ToString());
+
+                mensaje.AppendFormat("<table style = 'max-width: 600px; padding: 10px; margin:0 auto; border-collapse: collapse;'>");
+                mensaje.AppendFormat("<tr>");
+                mensaje.AppendFormat("<td style='padding: 0'>");
+                mensaje.AppendFormat("<img style='padding: 0; display: block' src='cid:imagen' width='600px' height='100px'>");
+                mensaje.AppendFormat("</td>");
+                mensaje.AppendFormat("</tr>");
+                mensaje.AppendFormat("<tr>");
+                mensaje.AppendFormat("<td style='background - color: #ecf0f1'>");
+                mensaje.AppendFormat("<div style='color: #34495e; margin: 4% 10% 2%; text-align: justify;font-family: sans-serif'>");
+                mensaje.AppendFormat("<h2 style='color: #e67e22; margin: 0 0 7px'>Hola!</h2>");
+                mensaje.AppendFormat("<p style='margin: 2px; font - size: 15px'>Su solicitud ya tiene un transportista, cuyos datos son. Nombre: {0}, Apellido: {0}. Ahora su solicitud ha pasado al estado <b>En camino</b>.</p>", usuario.Nombre, usuario.Apellido);
+                mensaje.AppendFormat("<p style='color: #b3b3b3; font-size: 12px; text-align: center;margin: 30px 0 0'>Maipo Grande 2019</p>");
+                mensaje.AppendFormat("</div>");
+                mensaje.AppendFormat("</td>");
+                mensaje.AppendFormat("</tr>");
+                mensaje.AppendFormat("</table>");
+                EnviarCorreo(email, "Solicitud se encuentra en camino", mensaje.ToString(), img);
                 sv.UpdateVenta(3, idVenta);
             }
 
@@ -202,7 +309,7 @@ namespace FeriaVirtualServices.Services
         /// En caso de que devuelva false, es por que se generó algún problema.
         /// </summary>
         /// <returns></returns>
-        private bool EnviarCorreo(string correoDestinatario, string asunto, string cuerpo)
+        private bool EnviarCorreo(string correoDestinatario, string asunto, string cuerpo, LinkedResource lr)
         {
             bool r = false;
             try
@@ -210,10 +317,15 @@ namespace FeriaVirtualServices.Services
                 MailMessage mail = new MailMessage();
                 SmtpClient SmtpServer = new SmtpClient("smtp.gmail.com");
                 SmtpServer.UseDefaultCredentials = false;
+                mail.IsBodyHtml = true;
+                
                 mail.From = new MailAddress("equipomaipogrande@gmail.com");
                 mail.To.Add(correoDestinatario);
                 mail.Subject = asunto;
-                mail.Body = cuerpo;
+                AlternateView htmlView = AlternateView.CreateAlternateViewFromString(
+                cuerpo, null, "text/html");
+                htmlView.LinkedResources.Add(lr);
+                mail.AlternateViews.Add(htmlView);
 
                 SmtpServer.Port = 587;
                 SmtpServer.Credentials = new System.Net.NetworkCredential("equipomaipogrande", "duocadmin123");
@@ -222,7 +334,8 @@ namespace FeriaVirtualServices.Services
                 SmtpServer.Send(mail);
                 r = true;
             }
-            catch (Exception e) {
+            catch (Exception e)
+            {
                 Debug.WriteLine(e.ToString());
                 r = false;
             }
