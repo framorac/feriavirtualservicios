@@ -229,6 +229,7 @@ namespace FeriaVirtualServices.Services
             return datos;
         }
 
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public List<VentaCompleta> GetVentaCompleta(int idTipoEstado, int idTipoVenta)
         {
             List<VentaCompleta> datos = new List<VentaCompleta>();
@@ -268,6 +269,94 @@ namespace FeriaVirtualServices.Services
                 Debug.WriteLine(e.ToString());
             }
             return datos;
+        }
+
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public List<VentaCompleta> GetVentaCompletaFiltradoAbierto(int idTipoEstado, int idTipoVenta)
+        {
+            List<VentaCompleta> datos = new List<VentaCompleta>();
+            try
+            {
+                Connection c = new Connection();
+                OracleDataAdapter adapter = new OracleDataAdapter();
+                OracleCommand comm = new OracleCommand();
+                comm.Connection = c.Conn;
+                // retorna usuario y perfil
+                comm.CommandText = "pkg_ventas.select_ventas_completa";
+                comm.CommandType = System.Data.CommandType.StoredProcedure;
+                comm.Parameters.Add("in_id_estado", OracleDbType.Int32, 38, "id_estado").Value = idTipoEstado;
+                comm.Parameters.Add("in_id_tipoventa", OracleDbType.Int32, 38, "id_tipoventa").Value = idTipoVenta;
+                comm.Parameters.Add("cur_ventas", OracleDbType.RefCursor).Direction = System.Data.ParameterDirection.Output;
+                using (OracleDataReader reader = comm.ExecuteReader())
+                {
+                    int id = 0;
+                    string tipoEstado = string.Empty;
+                    string tipoVenta = string.Empty;
+                    string nombre = string.Empty;
+                    DateTime fecha = DateTime.Now;
+                    while (reader.Read())
+                    {
+                        id = Convert.ToInt32(reader[0]);
+                        nombre = reader[1].ToString();
+                        tipoVenta = reader[2].ToString();
+                        tipoEstado = reader[3].ToString();
+                        fecha = (DateTime)(reader[4]);
+                        datos.Add(new VentaCompleta(id, nombre, tipoVenta, tipoEstado, fecha));
+                    }
+
+
+                }
+                c.Close();
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.ToString());
+            }
+            return datos.Where(x => x.Estado == "abierto").ToList();
+        }
+
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public List<VentaCompleta> GetVentaCompletaFiltradoIngresada(int idTipoEstado, int idTipoVenta)
+        {
+            List<VentaCompleta> datos = new List<VentaCompleta>();
+            try
+            {
+                Connection c = new Connection();
+                OracleDataAdapter adapter = new OracleDataAdapter();
+                OracleCommand comm = new OracleCommand();
+                comm.Connection = c.Conn;
+                // retorna usuario y perfil
+                comm.CommandText = "pkg_ventas.select_ventas_completa";
+                comm.CommandType = System.Data.CommandType.StoredProcedure;
+                comm.Parameters.Add("in_id_estado", OracleDbType.Int32, 38, "id_estado").Value = idTipoEstado;
+                comm.Parameters.Add("in_id_tipoventa", OracleDbType.Int32, 38, "id_tipoventa").Value = idTipoVenta;
+                comm.Parameters.Add("cur_ventas", OracleDbType.RefCursor).Direction = System.Data.ParameterDirection.Output;
+                using (OracleDataReader reader = comm.ExecuteReader())
+                {
+                    int id = 0;
+                    string tipoEstado = string.Empty;
+                    string tipoVenta = string.Empty;
+                    string nombre = string.Empty;
+                    DateTime fecha = DateTime.Now;
+                    while (reader.Read())
+                    {
+                        id = Convert.ToInt32(reader[0]);
+                        nombre = reader[1].ToString();
+                        tipoVenta = reader[2].ToString();
+                        tipoEstado = reader[3].ToString();
+                        fecha = (DateTime)(reader[4]);
+                        datos.Add(new VentaCompleta(id, nombre, tipoVenta, tipoEstado, fecha));
+                    }
+
+
+                }
+                c.Close();
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.ToString());
+            }
+            return datos.Where(x => x.Estado == "ingresada").ToList();
         }
     }
 }
