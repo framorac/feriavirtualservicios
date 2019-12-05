@@ -90,6 +90,7 @@ namespace FeriaVirtualServices.Services
                         }
                         if (ofertaMenor.Item1 != -1 && ofertaMenor.Item2 != -1) {
                             if (ofertasMenorPrecio.FirstOrDefault().Item2 > total) {
+                                // vaciar las ofertas ya que hemos encontrado una con menor precio
                                 ofertasMenorPrecio.Clear();
                             }
                             ofertasMenorPrecio.Add(ofertaMenor);
@@ -178,12 +179,16 @@ namespace FeriaVirtualServices.Services
                         Tuple<int, int, int, int, DateTime?, string> menorSubasta = new Tuple<int, int, int, int, DateTime?, string>(-1, -1, -1, -1, null, string.Empty);
                         foreach (var smp in subastasMenorPrecio)
                         {
-                            if (smp.Item2 <= total) {
+                            if (smp.Item2 >= total) {
                                 menorSubasta = new Tuple<int, int, int, int, DateTime?, string>(subasta.Id_subasta, total, calidad, capacidad, subasta.Fecha_inicio, subasta.Username);
                                 break;
                             }
                         }
                         if (menorSubasta.Item1 != -1 && menorSubasta.Item2 != -1) {
+                            if (subastasMenorPrecio.FirstOrDefault().Item2 > total)
+                            {
+                                subastasMenorPrecio.Clear();
+                            }
                             subastasMenorPrecio.Add(menorSubasta);
                         }
                     }
