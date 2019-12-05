@@ -14,5 +14,8 @@ namespace FeriaVirtualServices.Services
     {
         [OperationContract]
         List<Ofertas> GetOfertas();
+
+        [OperationContract]
+        string UpdateOfertaGanadora(int id_oferta);
     }
 }
