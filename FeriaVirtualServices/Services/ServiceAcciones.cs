@@ -104,8 +104,9 @@ namespace FeriaVirtualServices.Services
                         Tuple<int, int, string, int, DateTime?> ofertaMenor = new Tuple<int, int, string, int, DateTime?>(oferta.Id_oferta, total, oferta.Username, calidad, oferta.Fecha_inicio);
                         ofertasMenorPrecio.Add(ofertaMenor);
                     }
-                    else {
-                        Tuple<int, int, string, int, DateTime?> ofertaMenor = new Tuple<int, int, string, int, DateTime?>(-1,-1, string.Empty, -1, null);
+                    else
+                    {
+                        Tuple<int, int, string, int, DateTime?> ofertaMenor = new Tuple<int, int, string, int, DateTime?>(-1, -1, string.Empty, -1, null);
                         foreach (var omp in ofertasMenorPrecio)
                         {
                             if (total != -1 && omp.Item2 >= total)
@@ -114,13 +115,17 @@ namespace FeriaVirtualServices.Services
                                 break;
                             }
                         }
-                        if (ofertaMenor.Item1 != -1 && ofertaMenor.Item2 != -1) {
-                            if (ofertasMenorPrecio.FirstOrDefault().Item2 > total) {
+                        if (ofertaMenor.Item1 != -1 && ofertaMenor.Item2 != -1)
+                        {
+                            if (ofertasMenorPrecio.FirstOrDefault().Item2 > total)
+                            {
+                                // vaciar las ofertas ya que hemos encontrado una con menor precio
                                 ofertasMenorPrecio.Clear();
                             }
                             ofertasMenorPrecio.Add(ofertaMenor);
                         }
                     }
+
                 }
                 // Único ganador
                 if (ofertasMenorPrecio.Count == 1)
@@ -246,16 +251,23 @@ namespace FeriaVirtualServices.Services
                         Tuple<int, int, int, int, DateTime?, string> primeraSubasta = new Tuple<int, int, int, int, DateTime?, string>(subasta.Id_subasta, total, calidad, capacidad, subasta.Fecha_inicio, subasta.Username);
                         subastasMenorPrecio.Add(primeraSubasta);
                     }
-                    else {
+                    else
+                    {
                         Tuple<int, int, int, int, DateTime?, string> menorSubasta = new Tuple<int, int, int, int, DateTime?, string>(-1, -1, -1, -1, null, string.Empty);
                         foreach (var smp in subastasMenorPrecio)
                         {
-                            if (smp.Item2 >= total) {
+                            if (smp.Item2 >= total)
+                            {
                                 menorSubasta = new Tuple<int, int, int, int, DateTime?, string>(subasta.Id_subasta, total, calidad, capacidad, subasta.Fecha_inicio, subasta.Username);
                                 break;
                             }
                         }
-                        if (menorSubasta.Item1 != -1 && menorSubasta.Item2 != -1) {
+                        if (menorSubasta.Item1 != -1 && menorSubasta.Item2 != -1)
+                        {
+                            if (subastasMenorPrecio.FirstOrDefault().Item2 > total)
+                            {
+                                subastasMenorPrecio.Clear();
+                            }
                             subastasMenorPrecio.Add(menorSubasta);
                         }
                     }
