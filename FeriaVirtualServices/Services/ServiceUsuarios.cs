@@ -87,6 +87,7 @@ namespace FeriaVirtualServices.Services
                     string apellido = string.Empty;
                     string email = string.Empty;
                     DateTime fecha = DateTime.Now;
+
                     while (reader.Read())
                     {
                         id = Convert.ToInt32(reader[0].ToString());
@@ -102,9 +103,11 @@ namespace FeriaVirtualServices.Services
                 }
                 c.Close();
             }
-            catch (Exception e) {
+            catch (Exception e)
+            {
                 Debug.WriteLine(e.ToString());
             }
+
             return datos;
             //return f.Return(datos);
         }
