@@ -30,6 +30,7 @@ namespace FeriaVirtualServices.Services
             ServiceVentas sv = new ServiceVentas();
             ServiceUsuarios su = new ServiceUsuarios();
             ServiceDetalleOferta sdo = new ServiceDetalleOferta();
+            int idOfertaGanadora = 0;
             var ofertas = so.GetOfertas();
             ofertas.Where(x => x.Id_venta == idVenta);
             var tieneOfertas = ofertas.Where(x => x.Id_venta == idVenta).ToList();
@@ -103,8 +104,9 @@ namespace FeriaVirtualServices.Services
                         Tuple<int, int, string, int, DateTime?> ofertaMenor = new Tuple<int, int, string, int, DateTime?>(oferta.Id_oferta, total, oferta.Username, calidad, oferta.Fecha_inicio);
                         ofertasMenorPrecio.Add(ofertaMenor);
                     }
-                    else {
-                        Tuple<int, int, string, int, DateTime?> ofertaMenor = new Tuple<int, int, string, int, DateTime?>(-1,-1, string.Empty, -1, null);
+                    else
+                    {
+                        Tuple<int, int, string, int, DateTime?> ofertaMenor = new Tuple<int, int, string, int, DateTime?>(-1, -1, string.Empty, -1, null);
                         foreach (var omp in ofertasMenorPrecio)
                         {
                             if (total != -1 && omp.Item2 >= total)
@@ -113,18 +115,23 @@ namespace FeriaVirtualServices.Services
                                 break;
                             }
                         }
-                        if (ofertaMenor.Item1 != -1 && ofertaMenor.Item2 != -1) {
-                            if (ofertasMenorPrecio.FirstOrDefault().Item2 > total) {
+                        if (ofertaMenor.Item1 != -1 && ofertaMenor.Item2 != -1)
+                        {
+                            if (ofertasMenorPrecio.FirstOrDefault().Item2 > total)
+                            {
+                                // vaciar las ofertas ya que hemos encontrado una con menor precio
                                 ofertasMenorPrecio.Clear();
                             }
                             ofertasMenorPrecio.Add(ofertaMenor);
                         }
                     }
+
                 }
                 // Único ganador
                 if (ofertasMenorPrecio.Count == 1)
                 {
                     usuario = su.GetUsuarios().Where(x => x.Username == ofertasMenorPrecio.FirstOrDefault().Item3).FirstOrDefault();
+                    idOfertaGanadora = ofertasMenorPrecio.FirstOrDefault().Item1;
                 }
                 // En caso de que hayan 2 o más ofertas con el mismo precio, seguimos con el siguiente criterio de selección
                 else
@@ -136,11 +143,13 @@ namespace FeriaVirtualServices.Services
                     if (ofertasMejorCalidad.Count == 1)
                     {
                         usuario = su.GetUsuarios().Where(x => x.Username == ofertasMejorCalidad.FirstOrDefault().Item3).FirstOrDefault();
+                        idOfertaGanadora = ofertasMejorCalidad.FirstOrDefault().Item1;
                     }
                     // Caso último que tengamos más de una oferta con la misma calidad, entonces escogemos por la oferta más temprana
                     else {
                         var primeraOferta = ofertasMejorCalidad.OrderBy(x => x.Item5).FirstOrDefault();
                         usuario = su.GetUsuarios().Where(x => x.Username == primeraOferta.Item3).FirstOrDefault();
+                        idOfertaGanadora = primeraOferta.Item1;
                     }
                 }
 
@@ -167,6 +176,7 @@ namespace FeriaVirtualServices.Services
                 mensaje.AppendFormat("</table>");
                 EnviarCorreo(email, "Solicitud se encuentra en subasta", mensaje.ToString(), img);
                 sv.UpdateVenta(2, idVenta);
+                so.UpdateOfertaGanadora(idOfertaGanadora);
             }
 
             return usuario;
@@ -188,7 +198,7 @@ namespace FeriaVirtualServices.Services
             var venta = sv.GetVentas().Where(x => x.id == idVenta).FirstOrDefault();
             var email = su.GetUsuarios().Where(x => x.Username == venta.username).FirstOrDefault().Email;
             var subastas = ss.GetSubastas();
-
+            int idSubastaGanadora = 0;
             // validamos si ya está en un proceso posterior.
             var estadoVenta = sv.GetHistóricoEstadoVentas().Where(x => x.Id_venta == venta.id && x.Activo).FirstOrDefault().TipoEstado;
             if (estadoVenta != "en subasta")
@@ -241,16 +251,23 @@ namespace FeriaVirtualServices.Services
                         Tuple<int, int, int, int, DateTime?, string> primeraSubasta = new Tuple<int, int, int, int, DateTime?, string>(subasta.Id_subasta, total, calidad, capacidad, subasta.Fecha_inicio, subasta.Username);
                         subastasMenorPrecio.Add(primeraSubasta);
                     }
-                    else {
+                    else
+                    {
                         Tuple<int, int, int, int, DateTime?, string> menorSubasta = new Tuple<int, int, int, int, DateTime?, string>(-1, -1, -1, -1, null, string.Empty);
                         foreach (var smp in subastasMenorPrecio)
                         {
-                            if (smp.Item2 <= total) {
+                            if (smp.Item2 >= total)
+                            {
                                 menorSubasta = new Tuple<int, int, int, int, DateTime?, string>(subasta.Id_subasta, total, calidad, capacidad, subasta.Fecha_inicio, subasta.Username);
                                 break;
                             }
                         }
-                        if (menorSubasta.Item1 != -1 && menorSubasta.Item2 != -1) {
+                        if (menorSubasta.Item1 != -1 && menorSubasta.Item2 != -1)
+                        {
+                            if (subastasMenorPrecio.FirstOrDefault().Item2 > total)
+                            {
+                                subastasMenorPrecio.Clear();
+                            }
                             subastasMenorPrecio.Add(menorSubasta);
                         }
                     }
@@ -259,6 +276,7 @@ namespace FeriaVirtualServices.Services
                 if (subastasMenorPrecio.Count == 1)
                 {
                     usuario = su.GetUsuarios().Where(x => x.Username == subastasMenorPrecio.FirstOrDefault().Item6).FirstOrDefault();
+                    idSubastaGanadora = subastasMenorPrecio.FirstOrDefault().Item1;
                 }
                 // buscamos por el siguiente criterio
                 else {
@@ -267,10 +285,12 @@ namespace FeriaVirtualServices.Services
                     if (subastasMejorCalidad.Count == 1)
                     {
                         usuario = su.GetUsuarios().Where(x => x.Username == subastasMejorCalidad.FirstOrDefault().Item6).FirstOrDefault();
+                        idSubastaGanadora = subastasMejorCalidad.FirstOrDefault().Item1;
                     }
                     else {
                         var primeraSubasta = subastasMejorCalidad.OrderBy(x => x.Item5).FirstOrDefault();
                         usuario = su.GetUsuarios().Where(x => x.Username == primeraSubasta.Item6).FirstOrDefault();
+                        idSubastaGanadora = primeraSubasta.Item1;
                     }
                 }
 
@@ -298,6 +318,7 @@ namespace FeriaVirtualServices.Services
                 mensaje.AppendFormat("</table>");
                 EnviarCorreo(email, "Solicitud se encuentra en camino", mensaje.ToString(), img);
                 sv.UpdateVenta(3, idVenta);
+                ss.UpdateSubastaGanadora(idSubastaGanadora);
             }
 
             return usuario;
@@ -341,6 +362,10 @@ namespace FeriaVirtualServices.Services
             }
 
             return r;
+        }
+
+        public void ComenzarProcesoLocal(int idVentaFinalizada) {
+
         }
     }
 }
