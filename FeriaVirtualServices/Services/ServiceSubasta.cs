@@ -40,16 +40,24 @@ namespace FeriaVirtualServices.Services
                     bool isRefrigerado = false;
                     int capacidadCarga = 0;
                     string tipoTransporte = string.Empty;
+                    int precio = 0;
                     while (reader.Read())
                     {
                         id = Convert.ToInt32(reader[0]);
                         username = reader[1].ToString();
                         idOferta = Convert.ToInt32(reader[2]);
                         fecha_inicio = (DateTime)(reader[3]);
-                        isCertificado = Convert.ToBoolean(reader[4]);
-                        isRefrigerado = Convert.ToBoolean(reader[5]);
+                        if (reader[4].ToString() == "1") {
+                            isCertificado = true;
+                        }
+                        if (reader[5].ToString() == "1") {
+                            isRefrigerado = true;
+                        }
                         capacidadCarga = Convert.ToInt32(reader[6]);
                         tipoTransporte = reader[7].ToString();
+                        precio = Convert.ToInt32(reader[8]);
+
+                        subastas.Add(new Subastas(id, username, idOferta, fecha_inicio, isCertificado, isRefrigerado, capacidadCarga, tipoTransporte, precio));
                     }
                 }
                 c.Close();

@@ -250,7 +250,7 @@ namespace FeriaVirtualServices.Services
                         Tuple<int, int, int, int, DateTime?, string> menorSubasta = new Tuple<int, int, int, int, DateTime?, string>(-1, -1, -1, -1, null, string.Empty);
                         foreach (var smp in subastasMenorPrecio)
                         {
-                            if (smp.Item2 <= total) {
+                            if (smp.Item2 >= total) {
                                 menorSubasta = new Tuple<int, int, int, int, DateTime?, string>(subasta.Id_subasta, total, calidad, capacidad, subasta.Fecha_inicio, subasta.Username);
                                 break;
                             }
