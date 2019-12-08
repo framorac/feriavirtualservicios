@@ -37,6 +37,7 @@ namespace FeriaVirtualServices.Services
                     string nombre = string.Empty;
                     int cantidad = 0;
                     int precio = 0;
+                    int? idProducto = 0;
                     while (reader.Read())
                     {
                         id = Convert.ToInt32(reader[0]);
@@ -44,7 +45,8 @@ namespace FeriaVirtualServices.Services
                         nombre = reader[2].ToString();
                         cantidad = Convert.ToInt32(reader[3]);
                         precio = Convert.ToInt32(reader[4]);
-                        datos.Add(new DetalleOferta(id, id_oferta, nombre, cantidad, precio));
+                        idProducto = Convert.ToInt32(reader[5]);
+                        datos.Add(new DetalleOferta(id, id_oferta, nombre, cantidad, precio, idProducto));
                     }
                 }
                 c.Close();

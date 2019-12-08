@@ -42,6 +42,7 @@ namespace FeriaVirtualServices.Services
                     DateTime fecha_inicio = DateTime.Now;
                     bool isCertificado = false;
                     bool isEnvasado = false;
+                    bool isGanador = false;
                     while (reader.Read())
                     {
                         id = Convert.ToInt32(reader[0]);
@@ -55,7 +56,11 @@ namespace FeriaVirtualServices.Services
                         {
                             isEnvasado = true;
                         }
-                        datos.Add(new Ofertas(id, username, id_venta, fecha_inicio, isCertificado, isEnvasado));
+                        if (reader[6].ToString() == "1")
+                        {
+                            isGanador = true;
+                        }
+                        datos.Add(new Ofertas(id, username, id_venta, fecha_inicio, isCertificado, isEnvasado, isGanador));
                     }
                 }
                 c.Close();
