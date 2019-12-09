@@ -26,13 +26,18 @@ namespace FeriaVirtualServices.Structures.Tables
         [DataMember]
         public int Precio { get; set; }
 
-        public DetalleOferta(int id, int id_oferta, string nombre_producto, int cantidad, int precio)
+        [DataMember]
+        public int? IdProducto { get; set; }
+
+
+        public DetalleOferta(int id, int id_oferta, string nombre_producto, int cantidad, int precio, int? idProducto)
         {
             Id = id;
             Id_oferta = id_oferta;
             Nombre_producto = nombre_producto;
             Cantidad = cantidad;
             Precio = precio;
+            IdProducto = idProducto;
         }
     }
 }

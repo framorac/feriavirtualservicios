@@ -11,7 +11,7 @@ using System.Text;
 using System.Web;
 using System.Web.Script.Services;
 
-namespace FeriaVirtualServices.Services
+namespace FeriaVirtualServices.Services 
 {
     public class ServiceAcciones : IServiceAcciones
     {
@@ -364,8 +364,41 @@ namespace FeriaVirtualServices.Services
             return r;
         }
 
-        public void ComenzarProcesoLocal(int idVentaFinalizada) {
+        public string ComenzarProcesoLocal(int idVentaFinalizada) {
+            string r = "invalido";
 
+            ServiceVentas serviceVentas = new ServiceVentas();
+            ServiceDetalleVenta serviceDetalles = new ServiceDetalleVenta();
+            ServiceOfertas serviceOferta = new ServiceOfertas();
+            ServiceDetalleOferta serviceDetalleOferta = new ServiceDetalleOferta();
+            
+            Ventas venta = serviceVentas.GetVentas().Where(x => x.id == idVentaFinalizada).FirstOrDefault();
+            var estadoVenta = serviceVentas.GetHistóricoEstadoVentas().Where(x => x.Id_venta == venta.id && x.Activo).FirstOrDefault().TipoEstado;
+            if (estadoVenta != "finalizada")
+            {
+                return r;
+            }
+
+
+            List<DetalleVenta> detalles = serviceDetalles.GetDetalleVentaCompleta(idVentaFinalizada);
+            //List<DetalleVentaDB> nuevoDetalleVenta = new List<DetalleVentaDB>();
+            Ofertas ofertaGanadora = serviceOferta.GetOfertas().Where(x => x.Id_venta == idVentaFinalizada && x.IsGanador).FirstOrDefault();
+            List<DetalleOferta> detalleOferta = serviceDetalleOferta.GetDetalleOfertas(ofertaGanadora.Id_oferta);
+
+            serviceVentas.InsertVenta(1, DateTime.Now, 1);
+            Ventas ventaNueva = serviceVentas.GetVentas().OrderByDescending(x => x.id).FirstOrDefault();
+            foreach (var det in detalles)
+            {
+                DetalleOferta specOferta = detalleOferta.Where(x => x.IdProducto == det.IdProducto).FirstOrDefault();
+                int idProducto = det.IdProducto;
+                int nuevaCantidad = specOferta.Cantidad - det.Cantidad;
+                if (nuevaCantidad <= 0) {
+                    continue;
+                }
+                serviceDetalles.InsertDetalleVenta(idProducto, ventaNueva.id, nuevaCantidad);
+            }
+
+            return r;
         }
     }
 }
