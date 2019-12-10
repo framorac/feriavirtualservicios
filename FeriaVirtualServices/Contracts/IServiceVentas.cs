@@ -39,5 +39,11 @@ namespace FeriaVirtualServices.Services
 
         [OperationContract]
         List<VentaCompleta> GetVentaCompletaFiltradoEnSubasta(int idTipoEstado, int idTipoVenta);
+
+        [OperationContract]
+        List<VentaCompleta> GetVentaCompletaFiltradoEnCamino(int idTipoEstado, int idTipoVenta);
+
+        [OperationContract]
+        List<VentaCompleta> GetVentaCompletaFiltradoFinalizada(int idTipoEstado, int idTipoVenta);
     }
 }
