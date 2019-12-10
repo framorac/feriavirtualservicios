@@ -19,6 +19,7 @@ namespace FeriaVirtualServices.Services
         AuxiliarFunctions f = new AuxiliarFunctions();
 
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        [Obsolete("Evitar usar este, aunque funciona, es mejor utilizar el método GetDetalleVentaCompleta")]
         public List<DetalleVenta> GetDetalleVenta(int id_detalleVenta, int id_usuario)
         {
             List<DetalleVenta> datos = new List<DetalleVenta>();
@@ -48,6 +49,48 @@ namespace FeriaVirtualServices.Services
                         id_venta = Convert.ToInt32(reader[2]);
                         cantidad = Convert.ToInt32(reader[3]);
                         datos.Add(new DetalleVenta(id, nombre_producto, id_venta, cantidad));
+                    }
+                }
+                c.Close();
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.ToString());
+            }
+            //return f.Return(datos);
+            return datos;
+        }
+
+
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public List<DetalleVenta> GetDetalleVentaCompleta(int idVenta)
+        {
+            List<DetalleVenta> datos = new List<DetalleVenta>();
+            try
+            {
+                Connection c = new Connection();
+                // En base de este documento: https://www.c-sharpcorner.com/article/calling-oracle-stored-procedures-from-microsoft-net/
+                OracleDataAdapter adapter = new OracleDataAdapter();
+                OracleCommand comm = new OracleCommand();
+                comm.Connection = c.Conn;
+                // retorna usuario y perfil
+                comm.CommandText = "pkg_detalle_venta.select_detalle_venta_completo";
+                comm.CommandType = System.Data.CommandType.StoredProcedure;
+                comm.Parameters.Add("in_id_venta", OracleDbType.Int32, 38, "id_venta").Value = idVenta;
+                comm.Parameters.Add("cur_detalle_venta", OracleDbType.RefCursor).Direction = System.Data.ParameterDirection.Output;
+                using (OracleDataReader reader = comm.ExecuteReader())
+                {
+                    int id = 0;
+                    int idProducto = 0;
+                    int id_venta = 0;
+                    int cantidad = 0;
+                    while (reader.Read())
+                    {
+                        id = Convert.ToInt32(reader[0]);
+                        idProducto = Convert.ToInt32(reader[1]);
+                        id_venta = Convert.ToInt32(reader[2]);
+                        cantidad = Convert.ToInt32(reader[3]);
+                        datos.Add(new DetalleVenta(id, string.Empty, id_venta, cantidad, idProducto));
                     }
                 }
                 c.Close();

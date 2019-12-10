@@ -22,8 +22,10 @@ namespace FeriaVirtualServices.Structures.Tables
         public bool IsCertificado { get; set; }
         [DataMember]
         public bool IsEnvasado { get; set; }
+        [DataMember]
+        public bool IsGanador { get; set; }
 
-        public Ofertas(int id_oferta, string username, int id_venta, DateTime fecha_inicio, bool isCertificado, bool isEnvasado)
+        public Ofertas(int id_oferta, string username, int id_venta, DateTime fecha_inicio, bool isCertificado, bool isEnvasado, bool isGanador)
         {
             Id_oferta = id_oferta;
             Username = username;
@@ -31,6 +33,7 @@ namespace FeriaVirtualServices.Structures.Tables
             Fecha_inicio = fecha_inicio;
             IsCertificado = isCertificado;
             IsEnvasado = isEnvasado;
+            IsGanador = isGanador;
         }
     }
 }

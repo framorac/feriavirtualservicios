@@ -17,5 +17,8 @@ namespace FeriaVirtualServices.Services
 
         [OperationContract]
         string InsertDetalleVenta(int id_producto, int id_venta, int cantidad);
+
+        [OperationContract]
+        List<DetalleVenta> GetDetalleVentaCompleta(int idVenta);
     }
 }

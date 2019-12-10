@@ -11,7 +11,7 @@ using System.Text;
 using System.Web;
 using System.Web.Script.Services;
 
-namespace FeriaVirtualServices.Services
+namespace FeriaVirtualServices.Services 
 {
     public class ServiceAcciones : IServiceAcciones
     {
@@ -61,7 +61,7 @@ namespace FeriaVirtualServices.Services
                 mensaje.AppendFormat("<td style='background - color: #ecf0f1'>");
                 mensaje.AppendFormat("<div style='color: #34495e; margin: 4% 10% 2%; text-align: justify;font-family: sans-serif'>");
                 mensaje.AppendFormat("<h2 style='color: #e67e22; margin: 0 0 7px'>Hola!</h2>");
-                mensaje.AppendFormat("<p style='margin: 2px; font - size: 15px'>Su solicitud ha sido <b style='color: #FF0000'>cancelada</b>, debido a que no se recibieron ofertas por parte de productores.</p>");
+                mensaje.AppendFormat("<p style='margin: 2px; font - size: 15px'>Su solicitud número {0} ha sido <b style='color: #FF0000'>cancelada</b>, debido a que no se recibieron ofertas por parte de productores.</p>", venta.id);
                 mensaje.AppendFormat("<p style='color: #b3b3b3; font-size: 12px; text-align: center;margin: 30px 0 0'>Maipo Grande 2019</p>");
                 mensaje.AppendFormat("</div>");
                 mensaje.AppendFormat("</td>");
@@ -168,7 +168,7 @@ namespace FeriaVirtualServices.Services
                 mensaje.AppendFormat("<td style='background - color: #ecf0f1'>");
                 mensaje.AppendFormat("<div style='color: #34495e; margin: 4% 10% 2%; text-align: justify;font-family: sans-serif'>");
                 mensaje.AppendFormat("<h2 style='color: #e67e22; margin: 0 0 7px'>Hola!</h2>");
-                mensaje.AppendFormat("<p style='margin: 2px; font - size: 15px'>Su solicitud ya tiene un productor ganador, cuyos datos son. Nombre: {0}, Apellido: {0}. Ahora su solicitud ha pasado al estado <b>En subasta</b>, para la subasta de transporte.</p>", usuario.Nombre, usuario.Apellido);
+                mensaje.AppendFormat("<p style='margin: 2px; font - size: 15px'>Su solicitud número {0} ya tiene un productor ganador, cuyos datos son. Nombre: {1}, Apellido: {2}. Ahora su solicitud ha pasado al estado <b>En subasta</b>, para la subasta de transporte.</p>", venta.id, usuario.Nombre, usuario.Apellido);
                 mensaje.AppendFormat("<p style='color: #b3b3b3; font-size: 12px; text-align: center;margin: 30px 0 0'>Maipo Grande 2019</p>");
                 mensaje.AppendFormat("</div>");
                 mensaje.AppendFormat("</td>");
@@ -200,8 +200,9 @@ namespace FeriaVirtualServices.Services
             var subastas = ss.GetSubastas();
             int idSubastaGanadora = 0;
             // validamos si ya está en un proceso posterior.
-            var estadoVenta = sv.GetHistóricoEstadoVentas().Where(x => x.Id_venta == venta.id && x.Activo).FirstOrDefault().TipoEstado;
-            if (estadoVenta != "en subasta")
+            var estadoVenta = sv.GetHistóricoEstadoVentas().Where(x => x.Id_venta == venta.id && x.Activo).FirstOrDefault();
+
+            if (estadoVenta.TipoEstado != "en subasta")
             {
                 return usuario;
             }
@@ -223,7 +224,7 @@ namespace FeriaVirtualServices.Services
                 mensaje.AppendFormat("<td style='background - color: #ecf0f1'>");
                 mensaje.AppendFormat("<div style='color: #34495e; margin: 4% 10% 2%; text-align: justify;font-family: sans-serif'>");
                 mensaje.AppendFormat("<h2 style='color: #e67e22; margin: 0 0 7px'>Hola!</h2>");
-                mensaje.AppendFormat("<p style='margin: 2px; font - size: 15px'>Su solicitud no ha tenido subastas de transporte, se realizará un nuevo proceso de subasta, agradecemos su comprensión</p>");
+                mensaje.AppendFormat("<p style='margin: 2px; font - size: 15px'>Su solicitud número {0} no ha tenido subastas de transporte, se realizará un nuevo proceso de subasta, agradecemos su comprensión</p>", venta.id);
                 mensaje.AppendFormat("<p style='color: #b3b3b3; font-size: 12px; text-align: center;margin: 30px 0 0'>Maipo Grande 2019</p>");
                 mensaje.AppendFormat("</div>");
                 mensaje.AppendFormat("</td>");
@@ -310,7 +311,7 @@ namespace FeriaVirtualServices.Services
                 mensaje.AppendFormat("<td style='background - color: #ecf0f1'>");
                 mensaje.AppendFormat("<div style='color: #34495e; margin: 4% 10% 2%; text-align: justify;font-family: sans-serif'>");
                 mensaje.AppendFormat("<h2 style='color: #e67e22; margin: 0 0 7px'>Hola!</h2>");
-                mensaje.AppendFormat("<p style='margin: 2px; font - size: 15px'>Su solicitud ya tiene un transportista, cuyos datos son. Nombre: {0}, Apellido: {0}. Ahora su solicitud ha pasado al estado <b>En camino</b>.</p>", usuario.Nombre, usuario.Apellido);
+                mensaje.AppendFormat("<p style='margin: 2px; font - size: 15px'>Su solicitud número {0} ya tiene un transportista, cuyos datos son. Nombre: {1}, Apellido: {2}. Ahora su solicitud ha pasado al estado <b>En camino</b>.</p>", venta.id, usuario.Nombre, usuario.Apellido);
                 mensaje.AppendFormat("<p style='color: #b3b3b3; font-size: 12px; text-align: center;margin: 30px 0 0'>Maipo Grande 2019</p>");
                 mensaje.AppendFormat("</div>");
                 mensaje.AppendFormat("</td>");
@@ -364,8 +365,41 @@ namespace FeriaVirtualServices.Services
             return r;
         }
 
-        public void ComenzarProcesoLocal(int idVentaFinalizada) {
+        public string ComenzarProcesoLocal(int idVentaFinalizada) {
+            string r = "invalido";
 
+            ServiceVentas serviceVentas = new ServiceVentas();
+            ServiceDetalleVenta serviceDetalles = new ServiceDetalleVenta();
+            ServiceOfertas serviceOferta = new ServiceOfertas();
+            ServiceDetalleOferta serviceDetalleOferta = new ServiceDetalleOferta();
+            
+            Ventas venta = serviceVentas.GetVentas().Where(x => x.id == idVentaFinalizada).FirstOrDefault();
+            var estadoVenta = serviceVentas.GetHistóricoEstadoVentas().Where(x => x.Id_venta == venta.id && x.Activo).FirstOrDefault().TipoEstado;
+            if (estadoVenta != "finalizada")
+            {
+                return r;
+            }
+
+
+            List<DetalleVenta> detalles = serviceDetalles.GetDetalleVentaCompleta(idVentaFinalizada);
+            //List<DetalleVentaDB> nuevoDetalleVenta = new List<DetalleVentaDB>();
+            Ofertas ofertaGanadora = serviceOferta.GetOfertas().Where(x => x.Id_venta == idVentaFinalizada && x.IsGanador).FirstOrDefault();
+            List<DetalleOferta> detalleOferta = serviceDetalleOferta.GetDetalleOfertas(ofertaGanadora.Id_oferta);
+
+            serviceVentas.InsertVenta(1, DateTime.Now, 1);
+            Ventas ventaNueva = serviceVentas.GetVentas().OrderByDescending(x => x.id).FirstOrDefault();
+            foreach (var det in detalles)
+            {
+                DetalleOferta specOferta = detalleOferta.Where(x => x.IdProducto == det.IdProducto).FirstOrDefault();
+                int idProducto = det.IdProducto;
+                int nuevaCantidad = specOferta.Cantidad - det.Cantidad;
+                if (nuevaCantidad <= 0) {
+                    continue;
+                }
+                serviceDetalles.InsertDetalleVenta(idProducto, ventaNueva.id, nuevaCantidad);
+            }
+
+            return r;
         }
     }
 }
