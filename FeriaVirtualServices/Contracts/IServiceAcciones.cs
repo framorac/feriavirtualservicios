@@ -17,6 +17,10 @@ namespace FeriaVirtualServices.Services
 
         [OperationContract]
         Usuario AdjudicarTransportista(int idVenta);
-     
+
+        [OperationContract]
+        string ComenzarProcesoLocal(int idVentaFinalizada);
+
+
     }
 }

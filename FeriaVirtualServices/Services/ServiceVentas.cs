@@ -147,7 +147,7 @@ namespace FeriaVirtualServices.Services
         /// <param name="id_estado">Id del estado al cual se queire actualizar</param>
         /// <returns></returns>
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-        public string UpdateVenta(int id_estado, int id_venta)
+        public string UpdateVenta(int id_estado, int id_venta, char isLocal = '0')
         {
             ServiceVentas sv = new ServiceVentas();
             ServiceUsuarios su = new ServiceUsuarios();
@@ -162,13 +162,25 @@ namespace FeriaVirtualServices.Services
                 OracleCommand comm = new OracleCommand();
                 comm.Connection = c.Conn;
                 // retorna usuario y perfil
-                comm.CommandText = "pkg_historico_estado_ventas.insert_hev";
-                comm.CommandType = System.Data.CommandType.StoredProcedure;
-                comm.Parameters.Add("in_id_estado", OracleDbType.Int32, 38, "id_estado").Value = id_estado;
-                comm.Parameters.Add("in_id_venta", OracleDbType.Int32, 38, "id_venta").Value = id_venta;
-                comm.Parameters.Add("in_fecha", OracleDbType.Date, 30, "fecha").Value = DateTime.Now;
-                OracleParameter param = comm.Parameters.Add("response", OracleDbType.Int32, ParameterDirection.Output);
-
+                OracleParameter param = new OracleParameter();
+                if (isLocal != '1')
+                {
+                    comm.CommandText = "pkg_historico_estado_ventas.insert_hev";
+                    comm.CommandType = System.Data.CommandType.StoredProcedure;
+                    comm.Parameters.Add("in_id_estado", OracleDbType.Int32, 38, "id_estado").Value = id_estado;
+                    comm.Parameters.Add("in_id_venta", OracleDbType.Int32, 38, "id_venta").Value = id_venta;
+                    comm.Parameters.Add("in_fecha", OracleDbType.Date, 100, "fecha").Value = DateTime.Now;
+                    param = comm.Parameters.Add("response", OracleDbType.Int32, ParameterDirection.Output);
+                }
+                else {
+                    comm.CommandText = "pkg_historico_estado_ventas.insert_hev_local";
+                    comm.CommandType = System.Data.CommandType.StoredProcedure;
+                    comm.Parameters.Add("in_id_estado", OracleDbType.Int32, 38, "id_estado").Value = id_estado;
+                    comm.Parameters.Add("in_id_venta", OracleDbType.Int32, 38, "id_venta").Value = id_venta;
+                    comm.Parameters.Add("in_fecha", OracleDbType.Date, 100, "fecha").Value = DateTime.Now;
+                    comm.Parameters.Add("in_islocal", OracleDbType.Char, 1, "islocal").Value = isLocal;
+                    param = comm.Parameters.Add("response", OracleDbType.Int32, ParameterDirection.Output);
+                }
                 comm.ExecuteNonQuery();
                 var responseQuery = param.Value.ToString();
                 if (responseQuery == "1")
@@ -238,6 +250,7 @@ namespace FeriaVirtualServices.Services
                     int id_venta = 0;
                     DateTime fecha = DateTime.Now;
                     bool activo = false;
+                    bool isLocal = false;
                     while (reader.Read())
                     {
                         id = Convert.ToInt32(reader[0]);
@@ -248,11 +261,20 @@ namespace FeriaVirtualServices.Services
                         {
                             activo = true;
                         }
-                        else {
+                        else
+                        {
                             activo = false;
                         }
-                        
-                        datos.Add(new HistoricoEstadoVentas(id, tipoEstado, id_venta, fecha, activo));
+                        if (reader[5].ToString() == "1")
+                        {
+                            isLocal = true;
+                        }
+                        else
+                        {
+                            isLocal = false;
+                        }
+
+                        datos.Add(new HistoricoEstadoVentas(id, tipoEstado, id_venta, fecha, activo, isLocal));
                     }
                 }
                 c.Close();
@@ -481,6 +503,48 @@ namespace FeriaVirtualServices.Services
                 Debug.WriteLine(e.ToString());
             }
             return datos.Where(x => x.Estado == "en camino").ToList();
+        }
+
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public List<VentaCompleta> GetVentaCompletaFiltradoRecepcionado(int idTipoEstado, int idTipoVenta)
+        {
+            List<VentaCompleta> datos = new List<VentaCompleta>();
+            try
+            {
+                Connection c = new Connection();
+                OracleDataAdapter adapter = new OracleDataAdapter();
+                OracleCommand comm = new OracleCommand();
+                comm.Connection = c.Conn;
+                // retorna usuario y perfil
+                comm.CommandText = "pkg_ventas.select_ventas_completa";
+                comm.CommandType = System.Data.CommandType.StoredProcedure;
+                comm.Parameters.Add("in_id_estado", OracleDbType.Int32, 38, "id_estado").Value = idTipoEstado;
+                comm.Parameters.Add("in_id_tipoventa", OracleDbType.Int32, 38, "id_tipoventa").Value = idTipoVenta;
+                comm.Parameters.Add("cur_ventas", OracleDbType.RefCursor).Direction = System.Data.ParameterDirection.Output;
+                using (OracleDataReader reader = comm.ExecuteReader())
+                {
+                    int id = 0;
+                    string tipoEstado = string.Empty;
+                    string tipoVenta = string.Empty;
+                    string nombre = string.Empty;
+                    DateTime fecha = DateTime.Now;
+                    while (reader.Read())
+                    {
+                        id = Convert.ToInt32(reader[0]);
+                        nombre = reader[1].ToString();
+                        tipoVenta = reader[2].ToString();
+                        tipoEstado = reader[3].ToString();
+                        fecha = (DateTime)(reader[4]);
+                        datos.Add(new VentaCompleta(id, nombre, tipoVenta, tipoEstado, fecha));
+                    }
+                }
+                c.Close();
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.ToString());
+            }
+            return datos.Where(x => x.Estado == "recepcionado").ToList();
         }
 
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]

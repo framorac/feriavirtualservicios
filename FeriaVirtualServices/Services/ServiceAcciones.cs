@@ -70,6 +70,7 @@ namespace FeriaVirtualServices.Services
                 EnviarCorreo(email, "Solicitud Cancelada", mensaje.ToString(), img);
                 sv.UpdateVenta(5, idVenta);
                 
+                
             }
             else {
                 // Aquí empezamos el algoritmo para adjudicar al productor ganador
@@ -374,12 +375,11 @@ namespace FeriaVirtualServices.Services
             ServiceDetalleOferta serviceDetalleOferta = new ServiceDetalleOferta();
             
             Ventas venta = serviceVentas.GetVentas().Where(x => x.id == idVentaFinalizada).FirstOrDefault();
-            var estadoVenta = serviceVentas.GetHistóricoEstadoVentas().Where(x => x.Id_venta == venta.id && x.Activo).FirstOrDefault().TipoEstado;
-            if (estadoVenta != "finalizada")
+            var estadoVenta = serviceVentas.GetHistóricoEstadoVentas().Where(x => x.Id_venta == venta.id && x.Activo).FirstOrDefault();
+            if (estadoVenta.TipoEstado != "recepcionado" || estadoVenta.Islocal)
             {
                 return r;
             }
-
 
             List<DetalleVenta> detalles = serviceDetalles.GetDetalleVentaCompleta(idVentaFinalizada);
             //List<DetalleVentaDB> nuevoDetalleVenta = new List<DetalleVentaDB>();
@@ -398,6 +398,7 @@ namespace FeriaVirtualServices.Services
                 }
                 serviceDetalles.InsertDetalleVenta(idProducto, ventaNueva.id, nuevaCantidad);
             }
+            serviceVentas.UpdateVenta(4, idVentaFinalizada, '1');
 
             return r;
         }
