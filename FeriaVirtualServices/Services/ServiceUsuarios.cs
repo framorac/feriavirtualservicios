@@ -87,6 +87,7 @@ namespace FeriaVirtualServices.Services
                     string apellido = string.Empty;
                     string email = string.Empty;
                     DateTime fecha = DateTime.Now;
+
                     while (reader.Read())
                     {
                         id = Convert.ToInt32(reader[0].ToString());
@@ -102,9 +103,11 @@ namespace FeriaVirtualServices.Services
                 }
                 c.Close();
             }
-            catch (Exception e) {
+            catch (Exception e)
+            {
                 Debug.WriteLine(e.ToString());
             }
+
             return datos;
             //return f.Return(datos);
         }
@@ -137,10 +140,10 @@ namespace FeriaVirtualServices.Services
                 var responseQuery = param.Value.ToString();
                 if (responseQuery == "1")
                 {
-                    r = "La fila ha sido actualizada";
+                    r = "Los datos del cliente fueron actualizados correctamente";
                 }
                 else {
-                    r = "No se ha actualizado ninguna fila";
+                    r = "No se pudo actualizar los datos del cliente";
                 }
 
                 c.Close();
@@ -181,11 +184,11 @@ namespace FeriaVirtualServices.Services
                 var responseQuery = param.Value.ToString();
                 if (responseQuery == "1")
                 {
-                    r = "Usuario Ingresado.";
+                    r = "Usuario Ingresado correctamente.";
                 }
                 else
                 {
-                    r = "Usuario no ha sido ingresado. Consulte con el equipo técnico.";
+                    r = "No se pudo ingresar el usuario.";
                 }
 
                 c.Close();
@@ -219,7 +222,7 @@ namespace FeriaVirtualServices.Services
                 var responseQuery = param.Value.ToString();
                 if (responseQuery == "1")
                 {
-                    r = "Usuario eliminado.";
+                    r = "Usuario eliminado correctamente.";
                 }
                 else
                 {

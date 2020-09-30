@@ -41,13 +41,17 @@ namespace FeriaVirtualServices.Structures.Tables
         [DataMember]
         public bool Activo { get; set; }
 
-        public HistoricoEstadoVentas(int id, string tipoEstado, int id_venta, DateTime fecha, bool activo)
+        [DataMember]
+        public bool Islocal { get; set; }
+
+        public HistoricoEstadoVentas(int id, string tipoEstado, int id_venta, DateTime fecha, bool activo, bool isLocal)
         {
             Id = id;
             TipoEstado = tipoEstado;
             Id_venta = id_venta;
             Fecha = fecha;
             Activo = activo;
+            Islocal = isLocal;
         }
     }
 

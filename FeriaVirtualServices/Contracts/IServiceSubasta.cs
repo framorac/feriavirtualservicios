@@ -15,5 +15,8 @@ namespace FeriaVirtualServices.Services
 
         [OperationContract]
         List<Subastas> GetSubastas();
+
+        [OperationContract]
+        string UpdateSubastaGanadora(int id_subasta);
     }
 }

@@ -23,12 +23,30 @@ namespace FeriaVirtualServices.Services
         string DeleteVenta(int id);
 
         [OperationContract]
-        string UpdateVenta(int id_estado, int id_venta);
+        string UpdateVenta(int id_estado, int id_venta, char isLocal = '0');
 
         [OperationContract]
         List<HistoricoEstadoVentas> GetHistóricoEstadoVentas();
 
         [OperationContract]
         List<VentaCompleta> GetVentaCompleta(int idTipoEstado, int idTipoVenta);
+
+        [OperationContract]
+        List<VentaCompleta> GetVentaCompletaFiltradoAbierto(int idTipoEstado, int idTipoVenta);
+
+        [OperationContract]
+        List<VentaCompleta> GetVentaCompletaFiltradoIngresada(int idTipoEstado, int idTipoVenta);
+
+        [OperationContract]
+        List<VentaCompleta> GetVentaCompletaFiltradoEnSubasta(int idTipoEstado, int idTipoVenta);
+
+        [OperationContract]
+        List<VentaCompleta> GetVentaCompletaFiltradoEnCamino(int idTipoEstado, int idTipoVenta);
+
+        [OperationContract]
+        List<VentaCompleta> GetVentaCompletaFiltradoRecepcionado(int idTipoEstado, int idTipoVenta);
+
+        [OperationContract]
+        List<VentaCompleta> GetVentaCompletaFiltradoFinalizada(int idTipoEstado, int idTipoVenta);
     }
 }

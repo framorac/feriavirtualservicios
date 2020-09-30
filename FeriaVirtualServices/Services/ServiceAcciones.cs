@@ -4,12 +4,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Mail;
+using System.Net.Mime;
 using System.Runtime.Serialization;
 using System.ServiceModel;
 using System.Text;
+using System.Web;
 using System.Web.Script.Services;
 
-namespace FeriaVirtualServices.Services
+namespace FeriaVirtualServices.Services 
 {
     public class ServiceAcciones : IServiceAcciones
     {
@@ -28,8 +30,10 @@ namespace FeriaVirtualServices.Services
             ServiceVentas sv = new ServiceVentas();
             ServiceUsuarios su = new ServiceUsuarios();
             ServiceDetalleOferta sdo = new ServiceDetalleOferta();
+            int idOfertaGanadora = 0;
             var ofertas = so.GetOfertas();
             ofertas.Where(x => x.Id_venta == idVenta);
+            var tieneOfertas = ofertas.Where(x => x.Id_venta == idVenta).ToList();
             var venta = sv.GetVentas().Where(x => x.id == idVenta).FirstOrDefault();
             var email = su.GetUsuarios().Where(x => x.Username == venta.username).FirstOrDefault().Email;
             
@@ -39,11 +43,34 @@ namespace FeriaVirtualServices.Services
                 return usuario;
             }
 
-            if (ofertas.Count == 0)
+            if (tieneOfertas.Count == 0)
             {
                 // Notificar al cliente que no tiene adjudicaciones
+                LinkedResource img =
+                new LinkedResource(System.AppDomain.CurrentDomain.BaseDirectory + @"\IMAGENES\Frutas.jpg", MediaTypeNames.Image.Jpeg);
+                StringBuilder mensaje = new StringBuilder();
+                img.ContentId = "imagen";
+
+                mensaje.AppendFormat("<table style = 'max-width: 600px; padding: 10px; margin:0 auto; border-collapse: collapse;'>");
+                mensaje.AppendFormat("<tr>");
+                mensaje.AppendFormat("<td style='padding: 0'>");
+                mensaje.AppendFormat("<img style='padding: 0; display: block' src='cid:imagen' width='600px' height='100px'>");
+                mensaje.AppendFormat("</td>");
+                mensaje.AppendFormat("</tr>");
+                mensaje.AppendFormat("<tr>");
+                mensaje.AppendFormat("<td style='background - color: #ecf0f1'>");
+                mensaje.AppendFormat("<div style='color: #34495e; margin: 4% 10% 2%; text-align: justify;font-family: sans-serif'>");
+                mensaje.AppendFormat("<h2 style='color: #e67e22; margin: 0 0 7px'>Hola!</h2>");
+                mensaje.AppendFormat("<p style='margin: 2px; font - size: 15px'>Su solicitud número {0} ha sido <b style='color: #FF0000'>cancelada</b>, debido a que no se recibieron ofertas por parte de productores.</p>", venta.id);
+                mensaje.AppendFormat("<p style='color: #b3b3b3; font-size: 12px; text-align: center;margin: 30px 0 0'>Maipo Grande 2019</p>");
+                mensaje.AppendFormat("</div>");
+                mensaje.AppendFormat("</td>");
+                mensaje.AppendFormat("</tr>");
+                mensaje.AppendFormat("</table>");
+                EnviarCorreo(email, "Solicitud Cancelada", mensaje.ToString(), img);
                 sv.UpdateVenta(5, idVenta);
-                EnviarCorreo(email, "Solicitud Cancelada", "Su solicitud ha sido cancelada, debido a que no se recibieron ofertas");
+                
+                
             }
             else {
                 // Aquí empezamos el algoritmo para adjudicar al productor ganador
@@ -78,8 +105,9 @@ namespace FeriaVirtualServices.Services
                         Tuple<int, int, string, int, DateTime?> ofertaMenor = new Tuple<int, int, string, int, DateTime?>(oferta.Id_oferta, total, oferta.Username, calidad, oferta.Fecha_inicio);
                         ofertasMenorPrecio.Add(ofertaMenor);
                     }
-                    else {
-                        Tuple<int, int, string, int, DateTime?> ofertaMenor = new Tuple<int, int, string, int, DateTime?>(-1,-1, string.Empty, -1, null);
+                    else
+                    {
+                        Tuple<int, int, string, int, DateTime?> ofertaMenor = new Tuple<int, int, string, int, DateTime?>(-1, -1, string.Empty, -1, null);
                         foreach (var omp in ofertasMenorPrecio)
                         {
                             if (total != -1 && omp.Item2 >= total)
@@ -88,19 +116,28 @@ namespace FeriaVirtualServices.Services
                                 break;
                             }
                         }
+
                         if (ofertaMenor.Item1 != -1 && ofertaMenor.Item2 != -1) {
                             if (ofertasMenorPrecio.FirstOrDefault().Item2 > total) {
+
+                        if (ofertaMenor.Item1 != -1 && ofertaMenor.Item2 != -1)
+                        {
+                            if (ofertasMenorPrecio.FirstOrDefault().Item2 > total)
+                            {
+
                                 // vaciar las ofertas ya que hemos encontrado una con menor precio
                                 ofertasMenorPrecio.Clear();
                             }
                             ofertasMenorPrecio.Add(ofertaMenor);
                         }
                     }
+
                 }
                 // Único ganador
                 if (ofertasMenorPrecio.Count == 1)
                 {
                     usuario = su.GetUsuarios().Where(x => x.Username == ofertasMenorPrecio.FirstOrDefault().Item3).FirstOrDefault();
+                    idOfertaGanadora = ofertasMenorPrecio.FirstOrDefault().Item1;
                 }
                 // En caso de que hayan 2 o más ofertas con el mismo precio, seguimos con el siguiente criterio de selección
                 else
@@ -112,17 +149,40 @@ namespace FeriaVirtualServices.Services
                     if (ofertasMejorCalidad.Count == 1)
                     {
                         usuario = su.GetUsuarios().Where(x => x.Username == ofertasMejorCalidad.FirstOrDefault().Item3).FirstOrDefault();
+                        idOfertaGanadora = ofertasMejorCalidad.FirstOrDefault().Item1;
                     }
                     // Caso último que tengamos más de una oferta con la misma calidad, entonces escogemos por la oferta más temprana
                     else {
                         var primeraOferta = ofertasMejorCalidad.OrderBy(x => x.Item5).FirstOrDefault();
                         usuario = su.GetUsuarios().Where(x => x.Username == primeraOferta.Item3).FirstOrDefault();
+                        idOfertaGanadora = primeraOferta.Item1;
                     }
                 }
+
+                LinkedResource img =
+                new LinkedResource(System.AppDomain.CurrentDomain.BaseDirectory + @"\IMAGENES\Frutas.jpg", MediaTypeNames.Image.Jpeg);
+                img.ContentId = "imagen";
                 StringBuilder mensaje = new StringBuilder();
-                mensaje.AppendFormat("Su solicitud ya tiene un productor ganador, cuyos datos son. Nombre: {0}, Apellido: {0}. Ahora su solicitud ha pasado al estado de las subastas de transporte.", usuario.Nombre, usuario.Apellido);
-                EnviarCorreo(email, "Solicitud se encuentra en subasta", mensaje.ToString());
+
+                mensaje.AppendFormat("<table style = 'max-width: 600px; padding: 10px; margin:0 auto; border-collapse: collapse;'>");
+                mensaje.AppendFormat("<tr>");
+                mensaje.AppendFormat("<td style='padding: 0'>");
+                mensaje.AppendFormat("<img style='padding: 0; display: block' src='cid:imagen' width='600px' height='100px'>");
+                mensaje.AppendFormat("</td>");
+                mensaje.AppendFormat("</tr>");
+                mensaje.AppendFormat("<tr>");
+                mensaje.AppendFormat("<td style='background - color: #ecf0f1'>");
+                mensaje.AppendFormat("<div style='color: #34495e; margin: 4% 10% 2%; text-align: justify;font-family: sans-serif'>");
+                mensaje.AppendFormat("<h2 style='color: #e67e22; margin: 0 0 7px'>Hola!</h2>");
+                mensaje.AppendFormat("<p style='margin: 2px; font - size: 15px'>Su solicitud número {0} ya tiene un productor ganador, cuyos datos son. Nombre: {1}, Apellido: {2}. Ahora su solicitud ha pasado al estado <b>En subasta</b>, para la subasta de transporte.</p>", venta.id, usuario.Nombre, usuario.Apellido);
+                mensaje.AppendFormat("<p style='color: #b3b3b3; font-size: 12px; text-align: center;margin: 30px 0 0'>Maipo Grande 2019</p>");
+                mensaje.AppendFormat("</div>");
+                mensaje.AppendFormat("</td>");
+                mensaje.AppendFormat("</tr>");
+                mensaje.AppendFormat("</table>");
+                EnviarCorreo(email, "Solicitud se encuentra en subasta", mensaje.ToString(), img);
                 sv.UpdateVenta(2, idVenta);
+                so.UpdateOfertaGanadora(idOfertaGanadora);
             }
 
             return usuario;
@@ -135,7 +195,8 @@ namespace FeriaVirtualServices.Services
         /// <param name="idVenta"></param>
         /// <returns>Retorna el usuario que se ha adjudicado la oferta/venta</returns>
         /// [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-        public Usuario AdjudicarTransportista(int idVenta) {
+        public Usuario AdjudicarTransportista(int idVenta)
+        {
             Usuario usuario = new Usuario();
             ServiceSubasta ss = new ServiceSubasta();
             ServiceVentas sv = new ServiceVentas();
@@ -143,17 +204,39 @@ namespace FeriaVirtualServices.Services
             var venta = sv.GetVentas().Where(x => x.id == idVenta).FirstOrDefault();
             var email = su.GetUsuarios().Where(x => x.Username == venta.username).FirstOrDefault().Email;
             var subastas = ss.GetSubastas();
-
+            int idSubastaGanadora = 0;
             // validamos si ya está en un proceso posterior.
-            var estadoVenta = sv.GetHistóricoEstadoVentas().Where(x => x.Id_venta == venta.id && x.Activo).FirstOrDefault().TipoEstado;
-            if (estadoVenta != "en subasta")
+            var estadoVenta = sv.GetHistóricoEstadoVentas().Where(x => x.Id_venta == venta.id && x.Activo).FirstOrDefault();
+
+            if (estadoVenta.TipoEstado != "en subasta")
             {
                 return usuario;
             }
 
             if (subastas.Count == 0)
             {
-                EnviarCorreo(email, "Reinicio de subatas", "Su solicitud no ha tenido subastas de transporte, se realizará un nuevo proceso, agradecemos su comprensión");
+                LinkedResource img =
+                new LinkedResource(System.AppDomain.CurrentDomain.BaseDirectory + @"\IMAGENES\Frutas.jpg", MediaTypeNames.Image.Jpeg);
+                img.ContentId = "imagen";
+                StringBuilder mensaje = new StringBuilder();
+
+                mensaje.AppendFormat("<table style = 'max-width: 600px; padding: 10px; margin:0 auto; border-collapse: collapse;'>");
+                mensaje.AppendFormat("<tr>");
+                mensaje.AppendFormat("<td style='padding: 0'>");
+                mensaje.AppendFormat("<img style='padding: 0; display: block' src='cid:imagen' width='600px' height='100px'>");
+                mensaje.AppendFormat("</td>");
+                mensaje.AppendFormat("</tr>");
+                mensaje.AppendFormat("<tr>");
+                mensaje.AppendFormat("<td style='background - color: #ecf0f1'>");
+                mensaje.AppendFormat("<div style='color: #34495e; margin: 4% 10% 2%; text-align: justify;font-family: sans-serif'>");
+                mensaje.AppendFormat("<h2 style='color: #e67e22; margin: 0 0 7px'>Hola!</h2>");
+                mensaje.AppendFormat("<p style='margin: 2px; font - size: 15px'>Su solicitud número {0} no ha tenido subastas de transporte, se realizará un nuevo proceso de subasta, agradecemos su comprensión</p>", venta.id);
+                mensaje.AppendFormat("<p style='color: #b3b3b3; font-size: 12px; text-align: center;margin: 30px 0 0'>Maipo Grande 2019</p>");
+                mensaje.AppendFormat("</div>");
+                mensaje.AppendFormat("</td>");
+                mensaje.AppendFormat("</tr>");
+                mensaje.AppendFormat("</table>");
+                EnviarCorreo(email, "Reinicio de subastas", mensaje.ToString(), img);
             }
             else {
                 // ITEM1: IdSubasta:
@@ -175,16 +258,25 @@ namespace FeriaVirtualServices.Services
                         Tuple<int, int, int, int, DateTime?, string> primeraSubasta = new Tuple<int, int, int, int, DateTime?, string>(subasta.Id_subasta, total, calidad, capacidad, subasta.Fecha_inicio, subasta.Username);
                         subastasMenorPrecio.Add(primeraSubasta);
                     }
-                    else {
+                    else
+                    {
                         Tuple<int, int, int, int, DateTime?, string> menorSubasta = new Tuple<int, int, int, int, DateTime?, string>(-1, -1, -1, -1, null, string.Empty);
                         foreach (var smp in subastasMenorPrecio)
                         {
+
                             if (smp.Item2 >= total) {
+
+                            if (smp.Item2 >= total)
+                            {
                                 menorSubasta = new Tuple<int, int, int, int, DateTime?, string>(subasta.Id_subasta, total, calidad, capacidad, subasta.Fecha_inicio, subasta.Username);
                                 break;
                             }
                         }
                         if (menorSubasta.Item1 != -1 && menorSubasta.Item2 != -1) {
+
+                        if (menorSubasta.Item1 != -1 && menorSubasta.Item2 != -1)
+                        {
+
                             if (subastasMenorPrecio.FirstOrDefault().Item2 > total)
                             {
                                 subastasMenorPrecio.Clear();
@@ -197,6 +289,7 @@ namespace FeriaVirtualServices.Services
                 if (subastasMenorPrecio.Count == 1)
                 {
                     usuario = su.GetUsuarios().Where(x => x.Username == subastasMenorPrecio.FirstOrDefault().Item6).FirstOrDefault();
+                    idSubastaGanadora = subastasMenorPrecio.FirstOrDefault().Item1;
                 }
                 // buscamos por el siguiente criterio
                 else {
@@ -205,16 +298,40 @@ namespace FeriaVirtualServices.Services
                     if (subastasMejorCalidad.Count == 1)
                     {
                         usuario = su.GetUsuarios().Where(x => x.Username == subastasMejorCalidad.FirstOrDefault().Item6).FirstOrDefault();
+                        idSubastaGanadora = subastasMejorCalidad.FirstOrDefault().Item1;
                     }
                     else {
                         var primeraSubasta = subastasMejorCalidad.OrderBy(x => x.Item5).FirstOrDefault();
                         usuario = su.GetUsuarios().Where(x => x.Username == primeraSubasta.Item6).FirstOrDefault();
+                        idSubastaGanadora = primeraSubasta.Item1;
                     }
                 }
+
+                //Cuerpo del correo
+                LinkedResource img =
+                new LinkedResource(System.AppDomain.CurrentDomain.BaseDirectory + @"\IMAGENES\Frutas.jpg", MediaTypeNames.Image.Jpeg);
+                img.ContentId = "imagen";
                 StringBuilder mensaje = new StringBuilder();
-                mensaje.AppendFormat("Su solicitud ya tiene un transportista, cuyos datos son. Nombre: {0}, Apellido: {0}. Ahora su solicitud ha pasado al estado de las subastas de transporte.", usuario.Nombre, usuario.Apellido);
-                EnviarCorreo(email, "Solicitud se encuentra en camino", mensaje.ToString());
+
+                mensaje.AppendFormat("<table style = 'max-width: 600px; padding: 10px; margin:0 auto; border-collapse: collapse;'>");
+                mensaje.AppendFormat("<tr>");
+                mensaje.AppendFormat("<td style='padding: 0'>");
+                mensaje.AppendFormat("<img style='padding: 0; display: block' src='cid:imagen' width='600px' height='100px'>");
+                mensaje.AppendFormat("</td>");
+                mensaje.AppendFormat("</tr>");
+                mensaje.AppendFormat("<tr>");
+                mensaje.AppendFormat("<td style='background - color: #ecf0f1'>");
+                mensaje.AppendFormat("<div style='color: #34495e; margin: 4% 10% 2%; text-align: justify;font-family: sans-serif'>");
+                mensaje.AppendFormat("<h2 style='color: #e67e22; margin: 0 0 7px'>Hola!</h2>");
+                mensaje.AppendFormat("<p style='margin: 2px; font - size: 15px'>Su solicitud número {0} ya tiene un transportista, cuyos datos son. Nombre: {1}, Apellido: {2}. Ahora su solicitud ha pasado al estado <b>En camino</b>.</p>", venta.id, usuario.Nombre, usuario.Apellido);
+                mensaje.AppendFormat("<p style='color: #b3b3b3; font-size: 12px; text-align: center;margin: 30px 0 0'>Maipo Grande 2019</p>");
+                mensaje.AppendFormat("</div>");
+                mensaje.AppendFormat("</td>");
+                mensaje.AppendFormat("</tr>");
+                mensaje.AppendFormat("</table>");
+                EnviarCorreo(email, "Solicitud se encuentra en camino", mensaje.ToString(), img);
                 sv.UpdateVenta(3, idVenta);
+                ss.UpdateSubastaGanadora(idSubastaGanadora);
             }
 
             return usuario;
@@ -226,7 +343,7 @@ namespace FeriaVirtualServices.Services
         /// En caso de que devuelva false, es por que se generó algún problema.
         /// </summary>
         /// <returns></returns>
-        private bool EnviarCorreo(string correoDestinatario, string asunto, string cuerpo)
+        private bool EnviarCorreo(string correoDestinatario, string asunto, string cuerpo, LinkedResource lr)
         {
             bool r = false;
             try
@@ -234,10 +351,15 @@ namespace FeriaVirtualServices.Services
                 MailMessage mail = new MailMessage();
                 SmtpClient SmtpServer = new SmtpClient("smtp.gmail.com");
                 SmtpServer.UseDefaultCredentials = false;
+                mail.IsBodyHtml = true;
+                
                 mail.From = new MailAddress("equipomaipogrande@gmail.com");
                 mail.To.Add(correoDestinatario);
                 mail.Subject = asunto;
-                mail.Body = cuerpo;
+                AlternateView htmlView = AlternateView.CreateAlternateViewFromString(
+                cuerpo, null, "text/html");
+                htmlView.LinkedResources.Add(lr);
+                mail.AlternateViews.Add(htmlView);
 
                 SmtpServer.Port = 587;
                 SmtpServer.Credentials = new System.Net.NetworkCredential("equipomaipogrande", "duocadmin123");
@@ -246,10 +368,48 @@ namespace FeriaVirtualServices.Services
                 SmtpServer.Send(mail);
                 r = true;
             }
-            catch (Exception e) {
+            catch (Exception e)
+            {
                 Debug.WriteLine(e.ToString());
                 r = false;
             }
+
+            return r;
+        }
+
+        public string ComenzarProcesoLocal(int idVentaFinalizada) {
+            string r = "invalido";
+
+            ServiceVentas serviceVentas = new ServiceVentas();
+            ServiceDetalleVenta serviceDetalles = new ServiceDetalleVenta();
+            ServiceOfertas serviceOferta = new ServiceOfertas();
+            ServiceDetalleOferta serviceDetalleOferta = new ServiceDetalleOferta();
+            
+            Ventas venta = serviceVentas.GetVentas().Where(x => x.id == idVentaFinalizada).FirstOrDefault();
+            var estadoVenta = serviceVentas.GetHistóricoEstadoVentas().Where(x => x.Id_venta == venta.id && x.Activo).FirstOrDefault();
+            if (estadoVenta.TipoEstado != "recepcionado" || estadoVenta.Islocal)
+            {
+                return r;
+            }
+
+            List<DetalleVenta> detalles = serviceDetalles.GetDetalleVentaCompleta(idVentaFinalizada);
+            //List<DetalleVentaDB> nuevoDetalleVenta = new List<DetalleVentaDB>();
+            Ofertas ofertaGanadora = serviceOferta.GetOfertas().Where(x => x.Id_venta == idVentaFinalizada && x.IsGanador).FirstOrDefault();
+            List<DetalleOferta> detalleOferta = serviceDetalleOferta.GetDetalleOfertas(ofertaGanadora.Id_oferta);
+
+            serviceVentas.InsertVenta(1, DateTime.Now, 1);
+            Ventas ventaNueva = serviceVentas.GetVentas().OrderByDescending(x => x.id).FirstOrDefault();
+            foreach (var det in detalles)
+            {
+                DetalleOferta specOferta = detalleOferta.Where(x => x.IdProducto == det.IdProducto).FirstOrDefault();
+                int idProducto = det.IdProducto;
+                int nuevaCantidad = specOferta.Cantidad - det.Cantidad;
+                if (nuevaCantidad <= 0) {
+                    continue;
+                }
+                serviceDetalles.InsertDetalleVenta(idProducto, ventaNueva.id, nuevaCantidad);
+            }
+            serviceVentas.UpdateVenta(4, idVentaFinalizada, '1');
 
             return r;
         }
